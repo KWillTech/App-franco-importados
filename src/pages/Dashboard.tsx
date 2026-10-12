@@ -53,7 +53,7 @@ export default function Dashboard() {
             <Kpi label="Total de vendas" valor={String(r.totalVendas)} to="/vendas" />
             <Kpi label="Valor vendido" valor={brl(r.valorVendido)} />
             <Kpi label="Valor recebido" valor={brl(r.valorRecebido)} />
-            <Kpi label="Lucro" valor={brl(r.lucro)} tom="success" />
+            <Kpi label="Lucro" valor={brl(r.lucro)} tom={r.lucro < 0 ? 'danger' : 'success'} />
           </div>
           <p className="eyebrow mb-3">Parcelas</p>
           <div className="grid grid-cols-2 gap-px border border-line bg-line">

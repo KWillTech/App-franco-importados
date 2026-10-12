@@ -6,6 +6,7 @@ import { useAuth } from '@/auth'
 import { useVendas } from '@/lib/api'
 import { hoje, statusParcela } from '@/lib/domain'
 import { supabase } from '@/lib/supabase'
+import { ErroDeRota } from './ErroDeRota'
 import { Logo } from './Logo'
 import { Loading, usePrenderFoco } from './ui'
 
@@ -120,9 +121,11 @@ export function Layout() {
       </aside>
 
       <main key={pathname} className="mx-auto max-w-3xl px-4 pb-[max(3rem,env(safe-area-inset-bottom))] pt-6">
-        <Suspense fallback={<Loading />}>
-          <Outlet />
-        </Suspense>
+        <ErroDeRota>
+          <Suspense fallback={<Loading />}>
+            <Outlet />
+          </Suspense>
+        </ErroDeRota>
       </main>
     </div>
   )

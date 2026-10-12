@@ -6,7 +6,8 @@ Visual do design system Franco Importados.
 ## Primeira configuração (uma vez)
 
 1. No [Supabase](https://supabase.com/dashboard), abra o projeto, vá em **SQL Editor → New query**, cole o conteúdo de
-   `supabase/migrations/001_schema.sql` e clique em **Run**.
+   `supabase/migrations/001_schema.sql` e clique em **Run**. Este arquivo roda **uma única vez**; mudanças futuras no banco vão em novos arquivos numerados
+   (`002_*.sql`, `003_*.sql`…), nunca editando o `001`.
 2. Em **Authentication → Users → Add user**, crie o usuário administrador (e-mail e senha).
 3. Em **Authentication → Sign In / Providers**, desative **Allow new users to sign up**.
 4. Copie `.env.example` para `.env.local` e preencha `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`

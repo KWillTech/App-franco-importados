@@ -106,6 +106,23 @@ describe('recalcularParcelas', () => {
     const existentes = [parcela({ numero: 3, valor: 300, valor_pago: 300 })]
     expect(() => recalcularParcelas({ ...args, numParcelas: 2 }, existentes)).toThrow()
   })
+
+  it('recusa valor de venda menor que o já pago, mesmo sem parcelas livres', () => {
+    const existentes = [
+      parcela({ numero: 1, valor: 500, valor_pago: 500 }),
+      parcela({ numero: 2, valor: 500, valor_pago: 500 }),
+    ]
+    expect(() =>
+      recalcularParcelas({ valorVenda: 800, entrada: 0, numParcelas: 2, primeiroVencimento: '2026-10-10' }, existentes),
+    ).toThrow('O valor da venda é menor que o já pago.')
+  })
+
+  it('recusa saldo zerado quando ainda há parcelas livres', () => {
+    const existentes = [parcela({ numero: 1, valor: 500, valor_pago: 200 })]
+    expect(() =>
+      recalcularParcelas({ valorVenda: 1000, entrada: 500, numParcelas: 3, primeiroVencimento: '2026-10-10' }, existentes),
+    ).toThrow('O saldo já está coberto pelas parcelas pagas')
+  })
 })
 
 describe('resumo', () => {

@@ -3,7 +3,9 @@ export type Celula = string | number | null | undefined
 function celula(v: Celula): string {
   if (v === null || v === undefined) return ''
   if (typeof v === 'number') return Number.isInteger(v) ? String(v) : v.toFixed(2).replace('.', ',')
-  return /[;"\r\n]/.test(v) ? `"${v.replace(/"/g, '""')}"` : v
+  // Texto que começa com = + - @ (ou tab/CR) seria executado como fórmula no Excel.
+  const t = /^[=+\-@\t\r]/.test(v) ? `'${v}` : v
+  return /[;"\r\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t
 }
 
 /** CSV no padrão do Excel em português: separador ";" e vírgula decimal. */

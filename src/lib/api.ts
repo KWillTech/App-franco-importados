@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { supabase } from './supabase'
+import { buscarTodas } from './paginar'
 import type { AtualizacaoParcela, Cliente, NovaParcela, Parcela, Venda, VendaCompleta } from './domain'
 
 const n = (v: unknown) => Number(v ?? 0)
@@ -26,7 +27,10 @@ function ok<T>(r: { data: T | null; error: { message: string } | null }): T {
 export function useClientes() {
   return useQuery({
     queryKey: ['clientes'],
-    queryFn: async () => ok(await supabase.from('clientes').select('*').order('nome')) as Cliente[],
+    queryFn: async () =>
+      (await buscarTodas(async (i, f) =>
+        ok(await supabase.from('clientes').select('*').order('nome').order('id').range(i, f)),
+      )) as Cliente[],
   })
 }
 
@@ -34,13 +38,17 @@ export function useVendas() {
   return useQuery({
     queryKey: ['vendas'],
     queryFn: async () => {
-      const data = ok(
-        await supabase
-          .from('vendas')
-          .select('*, cliente:clientes(*), parcelas(*)')
-          .order('data_venda', { ascending: false })
-          .order('created_at', { ascending: false }),
-      ) as VendaCompleta[]
+      const data = (await buscarTodas(async (i, f) =>
+        ok(
+          await supabase
+            .from('vendas')
+            .select('*, cliente:clientes(*), parcelas(*)')
+            .order('data_venda', { ascending: false })
+            .order('created_at', { ascending: false })
+            .order('id')
+            .range(i, f),
+        ),
+      )) as VendaCompleta[]
       return data.map(normalizarVenda)
     },
   })

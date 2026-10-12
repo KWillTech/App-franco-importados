@@ -21,7 +21,8 @@ for (let i = 0; ; i++) {
 const dia = (offset) => {
   const d = new Date()
   d.setDate(d.getDate() + offset)
-  return d.toISOString().slice(0, 10)
+  const z = (x) => String(x).padStart(2, '0')
+  return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`
 }
 
 const user = {

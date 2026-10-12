@@ -130,11 +130,14 @@ export function recalcularParcelas(
   const usados = new Set(mantidas.map((p) => p.numero))
   const livres = Array.from({ length: args.numParcelas }, (_, i) => i + 1).filter((n) => !usados.has(n))
   const saldo = round2(args.valorVenda - args.entrada - mantidas.reduce((s, p) => s + Number(p.valor), 0))
+  if (saldo < 0) throw new Error('O valor da venda é menor que o já pago.')
   if (livres.length === 0) {
     if (saldo > 0) throw new Error('Não há parcelas livres para o saldo restante.')
     return []
   }
-  if (saldo < 0) throw new Error('O valor da venda é menor que o já pago.')
+  if (saldo === 0) {
+    throw new Error(`O saldo já está coberto pelas parcelas pagas: use ${mantidas.length} parcela(s) ou aumente o valor da venda.`)
+  }
   const valores = dividir(saldo, livres.length)
   return livres.map((numero, i) => ({
     numero,
