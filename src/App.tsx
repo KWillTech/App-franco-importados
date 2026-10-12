@@ -1,18 +1,21 @@
+import { lazy } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { RequireAuth } from './auth'
 import { Layout } from './components/Layout'
-import Agenda from './pages/Agenda'
-import ClienteDetalhe from './pages/ClienteDetalhe'
-import Clientes from './pages/Clientes'
-import Configuracoes from './pages/Configuracoes'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
-import Parcelas from './pages/Parcelas'
-import Pesquisa from './pages/Pesquisa'
-import Relatorios from './pages/Relatorios'
-import Vendas from './pages/Vendas'
-import VendaDetalhe from './pages/VendaDetalhe'
-import VendaForm from './pages/VendaForm'
+
+// Login e Painel vêm no pacote principal; as demais telas carregam sob demanda (Suspense no Layout).
+const Agenda = lazy(() => import('./pages/Agenda'))
+const ClienteDetalhe = lazy(() => import('./pages/ClienteDetalhe'))
+const Clientes = lazy(() => import('./pages/Clientes'))
+const Configuracoes = lazy(() => import('./pages/Configuracoes'))
+const Parcelas = lazy(() => import('./pages/Parcelas'))
+const Pesquisa = lazy(() => import('./pages/Pesquisa'))
+const Relatorios = lazy(() => import('./pages/Relatorios'))
+const Vendas = lazy(() => import('./pages/Vendas'))
+const VendaDetalhe = lazy(() => import('./pages/VendaDetalhe'))
+const VendaForm = lazy(() => import('./pages/VendaForm'))
 
 export default function App() {
   return (

@@ -12,6 +12,7 @@ export function PagarModal({ venda, parcela, onClose }: { venda: VendaCompleta; 
   const [valor, setValor] = useState(valorInput(primeira ? restante(primeira) : 0))
   const [dataPagamento, setDataPagamento] = useState(hoje())
   const [erro, setErro] = useState<string>()
+  const [erroData, setErroData] = useState<string>()
   const v = parseValor(valor)
   const { updates, troco } = distribuirPagamento(alvo, v, dataPagamento)
 
@@ -19,7 +20,8 @@ export function PagarModal({ venda, parcela, onClose }: { venda: VendaCompleta; 
     e.preventDefault()
     if (v <= 0) return setErro('Informe um valor maior que zero.')
     if (troco > 0) return setErro(`O valor passa do saldo de ${brl(saldo)}.`)
-    if (!dataPagamento) return setErro('Informe a data do pagamento.')
+    if (!dataPagamento) return setErroData('Informe a data do pagamento.')
+    if (dataPagamento > hoje()) return setErroData('A data do pagamento não pode ser futura.')
     try {
       await atualizar.mutateAsync(updates)
       onClose()
@@ -66,8 +68,16 @@ export function PagarModal({ venda, parcela, onClose }: { venda: VendaCompleta; 
             autoFocus
           />
         </Field>
-        <Field label="Data do pagamento">
-          <Input type="date" value={dataPagamento} max={hoje()} onChange={(e) => setDataPagamento(e.target.value)} />
+        <Field label="Data do pagamento" error={erroData}>
+          <Input
+            type="date"
+            value={dataPagamento}
+            max={hoje()}
+            onChange={(e) => {
+              setDataPagamento(e.target.value)
+              setErroData(undefined)
+            }}
+          />
         </Field>
         {v > 0 && troco === 0 && updates.length > 0 && (
           <ul className="tabular flex flex-col gap-1 text-sm text-ink-muted">

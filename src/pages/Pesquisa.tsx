@@ -16,6 +16,7 @@ export default function Pesquisa() {
   const achadosClientes = ativa ? (clientes.data ?? []).filter((c) => combina(busca, c.nome, c.telefone, c.cpf, c.observacao)).slice(0, LIMITE) : []
   const achadosVendas = ativa ? (vendas.data ?? []).filter((v) => combina(busca, v.produto, v.cliente.nome, v.observacao)).slice(0, LIMITE) : []
   const carregando = clientes.isLoading || vendas.isLoading
+  const erro = clientes.error ?? vendas.error
 
   return (
     <>
@@ -29,13 +30,13 @@ export default function Pesquisa() {
           aria-label="Pesquisar"
         />
       </div>
-      <ErrorBox error={clientes.error ?? vendas.error} />
-      {!ativa ? (
+      <ErrorBox error={erro} />
+      {erro ? null : !ativa ? (
         <Empty>Digite pelo menos 2 letras.</Empty>
       ) : carregando ? (
         <Loading />
       ) : achadosClientes.length === 0 && achadosVendas.length === 0 ? (
-        <Empty>Nada encontrado para "{busca}".</Empty>
+        <Empty>Nada encontrado para “{busca}”.</Empty>
       ) : (
         <div className="flex flex-col gap-8">
           {achadosClientes.length > 0 && (

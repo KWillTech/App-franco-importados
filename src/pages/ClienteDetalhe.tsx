@@ -5,7 +5,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ClienteForm } from '@/components/ClienteForm'
 import { PagarModal } from '@/components/PagarModal'
 import { VendaCard } from '@/components/VendaCard'
-import { Button, Card, Empty, ErrorBox, Info, Loading, PageHeader, buttonClass } from '@/components/ui'
+import { Button, Card, Empty, ErrorBox, Info, Loading, PageHeader, buttonClass, useConfirmacao } from '@/components/ui'
 import { useClientes, useExcluirCliente, useVendas } from '@/lib/api'
 import { restante, round2, saldoDevedor, statusParcela, type VendaCompleta } from '@/lib/domain'
 import { brl, mensagemCobranca, whatsapp } from '@/lib/format'
@@ -16,6 +16,7 @@ export default function ClienteDetalhe() {
   const vendas = useVendas()
   const excluir = useExcluirCliente()
   const navigate = useNavigate()
+  const [confirmar, dialogo] = useConfirmacao()
   const [editando, setEditando] = useState(false)
   const [pagando, setPagando] = useState<VendaCompleta | null>(null)
 
@@ -33,7 +34,13 @@ export default function ClienteDetalhe() {
   const link = whatsapp(c.telefone, atrasado > 0 ? mensagemCobranca(c.nome, atrasado) : undefined)
 
   async function remover() {
-    if (!confirm(`Excluir ${c.nome}?`)) return
+    const ok = await confirmar({
+      titulo: 'Excluir cliente',
+      mensagem: `Excluir ${c.nome}? Esta ação não pode ser desfeita.`,
+      acao: 'Excluir',
+      tom: 'danger',
+    })
+    if (!ok) return
     try {
       await excluir.mutateAsync(c.id)
       navigate('/clientes', { replace: true })
@@ -96,6 +103,7 @@ export default function ClienteDetalhe() {
       )}
       {editando && <ClienteForm cliente={c} onClose={() => setEditando(false)} />}
       {pagando && <PagarModal venda={pagando} onClose={() => setPagando(null)} />}
+      {dialogo}
     </>
   )
 }

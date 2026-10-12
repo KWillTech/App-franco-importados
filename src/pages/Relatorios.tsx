@@ -6,7 +6,15 @@ import { Button, Empty, ErrorBox, Loading, PageHeader } from '@/components/ui'
 import { useVendas } from '@/lib/api'
 import { baixarCsv } from '@/lib/csv'
 import { FORMAS, ROTULO_STATUS, hoje, lucro, maioresDevedores, resumoMensal, saldoDevedor, statusParcela, statusVenda } from '@/lib/domain'
+import { format, parseISO } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import { brl, dataBR, mesAno } from '@/lib/format'
+
+// Mês curto ("Out/26") para as quatro colunas caberem num celular de 360–390px.
+const mesCurto = (m: string) => {
+  const t = format(parseISO(`${m}-01`), 'MMM/yy', { locale: ptBR })
+  return t.charAt(0).toUpperCase() + t.slice(1)
+}
 
 export default function Relatorios() {
   const vendas = useVendas()
@@ -63,22 +71,26 @@ export default function Relatorios() {
           <section>
             <h2 className="eyebrow mb-3">Por mês</h2>
             <div className="overflow-x-auto border border-line bg-surface-raised">
-              <table className="tabular w-full text-sm">
+              <table className="tabular w-full text-[13px] leading-5">
                 <thead>
                   <tr className="border-b border-line text-left text-xs text-ink-muted">
-                    <th scope="col" className="px-4 py-3 font-normal">Mês</th>
-                    <th scope="col" className="px-4 py-3 text-right font-normal">Vendido</th>
-                    <th scope="col" className="px-4 py-3 text-right font-normal">Recebido</th>
-                    <th scope="col" className="px-4 py-3 text-right font-normal">Lucro</th>
+                    <th scope="col" className="py-3 pl-3 pr-2 font-normal">Mês</th>
+                    <th scope="col" className="px-2 py-3 text-right font-normal">Vendido</th>
+                    <th scope="col" className="px-2 py-3 text-right font-normal">Recebido</th>
+                    <th scope="col" className="py-3 pl-2 pr-3 text-right font-normal">Lucro</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-line">
                   {meses.map((m) => (
                     <tr key={m.mes}>
-                      <td className="whitespace-nowrap px-4 py-3 capitalize">{mesAno(m.mes)}</td>
-                      <td className="px-4 py-3 text-right">{brl(m.vendido)}</td>
-                      <td className="px-4 py-3 text-right">{brl(m.recebido)}</td>
-                      <td className={clsx('px-4 py-3 text-right', m.lucro < 0 && 'text-danger')}>{brl(m.lucro)}</td>
+                      <th scope="row" className="whitespace-nowrap py-3 pl-3 pr-2 text-left font-normal">
+                        <abbr title={mesAno(m.mes)} className="no-underline">
+                          {mesCurto(m.mes)}
+                        </abbr>
+                      </th>
+                      <td className="whitespace-nowrap px-2 py-3 text-right">{brl(m.vendido)}</td>
+                      <td className="whitespace-nowrap px-2 py-3 text-right">{brl(m.recebido)}</td>
+                      <td className={clsx('whitespace-nowrap py-3 pl-2 pr-3 text-right', m.lucro < 0 && 'text-danger')}>{brl(m.lucro)}</td>
                     </tr>
                   ))}
                 </tbody>

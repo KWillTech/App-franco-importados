@@ -5,10 +5,10 @@ export type ChavePeriodo = 'hoje' | 'semana' | 'mes' | 'mes_passado' | 'ano' | '
 
 export const PERIODOS: Record<ChavePeriodo, string> = {
   hoje: 'Hoje',
-  semana: 'Esta Semana',
-  mes: 'Este Mês',
-  mes_passado: 'Mês Passado',
-  ano: 'Este Ano',
+  semana: 'Esta semana',
+  mes: 'Este mês',
+  mes_passado: 'Mês passado',
+  ano: 'Este ano',
   tudo: 'Todo o período',
 }
 

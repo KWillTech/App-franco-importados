@@ -31,10 +31,10 @@ export default function Login() {
           <p className="eyebrow">Gestão de clientes e recebimentos</p>
         </div>
         <Field label="E-mail">
-          <Input type="email" autoComplete="email" inputMode="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input type="email" name="email" autoComplete="email" inputMode="email" spellCheck={false} autoCapitalize="none" required value={email} onChange={(e) => setEmail(e.target.value)} />
         </Field>
         <Field label="Senha">
-          <Input type="password" autoComplete="current-password" required value={senha} onChange={(e) => setSenha(e.target.value)} />
+          <Input type="password" name="password" autoComplete="current-password" required value={senha} onChange={(e) => setSenha(e.target.value)} />
         </Field>
         <ErrorBox error={erro} />
         <Button full disabled={enviando}>

@@ -24,7 +24,7 @@ export default function Clientes() {
         subtitle={`${clientes.data?.length ?? 0} cadastrados`}
         action={
           <Button size="sm" onClick={() => setNovo(true)}>
-            <Plus size={16} strokeWidth={1.5} />
+            <Plus size={16} strokeWidth={1.5} aria-hidden="true" />
             Novo
           </Button>
         }

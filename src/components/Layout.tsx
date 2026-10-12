@@ -1,15 +1,16 @@
 import clsx from 'clsx'
 import { Bell, CalendarClock, FileBarChart, LayoutGrid, LogOut, Menu, Receipt, Search, Settings, ShoppingBag, Users, X } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { Suspense, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/auth'
 import { useVendas } from '@/lib/api'
 import { hoje, statusParcela } from '@/lib/domain'
 import { supabase } from '@/lib/supabase'
 import { Logo } from './Logo'
+import { Loading, usePrenderFoco } from './ui'
 
 const itens = [
-  { to: '/', label: 'Dashboard', icon: LayoutGrid },
+  { to: '/', label: 'Painel', icon: LayoutGrid },
   { to: '/clientes', label: 'Clientes', icon: Users },
   { to: '/vendas', label: 'Vendas', icon: ShoppingBag },
   { to: '/parcelas', label: 'Parcelas', icon: Receipt },
@@ -39,20 +40,22 @@ export function Layout() {
   const { session } = useAuth()
   const alertas = useAlertas()
   const { pathname } = useLocation()
+  const gaveta = useRef<HTMLElement>(null)
+  usePrenderFoco(gaveta, aberto, () => setAberto(false))
 
   return (
     <div className="min-h-dvh bg-surface">
       <header className="sticky top-0 z-30 border-b border-line bg-bg pt-[env(safe-area-inset-top)] shadow-sm">
         <div className="mx-auto grid h-14 max-w-3xl grid-cols-[1fr_auto_1fr] items-center px-2">
-          <button onClick={() => setAberto(true)} aria-label="Abrir menu" className={icone}>
-            <Menu size={22} strokeWidth={1.5} />
+          <button onClick={() => setAberto(true)} aria-label="Abrir menu" aria-expanded={aberto} aria-controls="menu-principal" className={icone}>
+            <Menu size={22} strokeWidth={1.5} aria-hidden="true" />
           </button>
           <Link to="/" aria-label="Início">
             <Logo className="h-9" />
           </Link>
           <div className="flex justify-end">
             <Link to="/agenda" className={clsx(icone, 'relative')} aria-label={`Cobranças pendentes: ${alertas}`}>
-              <Bell size={20} strokeWidth={1.5} />
+              <Bell size={20} strokeWidth={1.5} aria-hidden="true" />
               {alertas > 0 && (
                 <span className="tabular absolute right-0.5 top-1 h-[18px] min-w-[18px] rounded-pill bg-brand px-[5px] text-center text-[11px] font-medium leading-[18px] text-on-brand">
                   {alertas > 99 ? '99+' : alertas}
@@ -60,27 +63,33 @@ export function Layout() {
               )}
             </Link>
             <Link to="/configuracoes" className={icone} aria-label="Configurações">
-              <Settings size={20} strokeWidth={1.5} />
+              <Settings size={20} strokeWidth={1.5} aria-hidden="true" />
             </Link>
           </div>
         </div>
       </header>
 
-      {aberto && <div className="fixed inset-0 z-40 bg-black/60" onClick={() => setAberto(false)} />}
+      {aberto && <div className="fixed inset-0 z-40 bg-black/60" onClick={() => setAberto(false)} aria-hidden="true" />}
+      {/* visibility entra na transição: ao fechar, a gaveta desliza e só depois some (sai do Tab). */}
       <aside
+        ref={gaveta}
+        id="menu-principal"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Menu"
+        tabIndex={-1}
         className={clsx(
-          'fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-surface-inverse pt-[env(safe-area-inset-top)] text-ink-inverse shadow-lg transition-transform duration-200',
+          'fixed inset-y-0 left-0 z-50 flex w-72 flex-col overflow-y-auto overscroll-contain bg-surface-inverse pt-[env(safe-area-inset-top)] text-ink-inverse shadow-lg outline-none transition-[transform,visibility] duration-200 motion-reduce:transition-none',
           aberto ? 'visible translate-x-0' : 'invisible -translate-x-full',
         )}
       >
         <div className="flex items-center justify-between px-4 py-4">
-          <Logo inverse className="h-12 dark:hidden" />
-          <Logo className="hidden h-12 dark:block" />
+          <Logo inverse className="h-12" />
           <button onClick={() => setAberto(false)} aria-label="Fechar menu" className="flex h-11 w-11 items-center justify-center">
-            <X size={20} strokeWidth={1.5} />
+            <X size={20} strokeWidth={1.5} aria-hidden="true" />
           </button>
         </div>
-        <nav className="flex-1 border-t border-ink-inverse/20 px-2 pt-2">
+        <nav aria-label="Seções" className="flex-1 border-t border-ink-inverse/20 px-2 pt-2">
           {itens.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -94,7 +103,7 @@ export function Layout() {
                 )
               }
             >
-              <Icon size={18} strokeWidth={1.5} />
+              <Icon size={18} strokeWidth={1.5} aria-hidden="true" />
               {label}
             </NavLink>
           ))}
@@ -105,13 +114,15 @@ export function Layout() {
             <div className="truncate text-sm">{session?.user.email}</div>
           </div>
           <button onClick={() => supabase.auth.signOut()} className="label flex w-full items-center gap-3 px-3 py-3 opacity-80 hover:opacity-100">
-            <LogOut size={18} strokeWidth={1.5} /> Sair
+            <LogOut size={18} strokeWidth={1.5} aria-hidden="true" /> Sair
           </button>
         </div>
       </aside>
 
       <main key={pathname} className="mx-auto max-w-3xl px-4 pb-[max(3rem,env(safe-area-inset-bottom))] pt-6">
-        <Outlet />
+        <Suspense fallback={<Loading />}>
+          <Outlet />
+        </Suspense>
       </main>
     </div>
   )

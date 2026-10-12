@@ -32,7 +32,7 @@ export function ParcelaItem({ venda, parcela, onPagar }: ItemAgenda & { onPagar:
               WhatsApp
             </a>
           ) : (
-            <span />
+            <span className="flex items-center justify-center text-xs leading-4 text-ink-subtle">Sem telefone</span>
           )}
           <Button size="sm" onClick={onPagar}>
             Pagar

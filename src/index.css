@@ -57,9 +57,15 @@
   color-scheme: dark;
 }
 
+html {
+  /* O cabeçalho fixo (h-14 + área segura) não pode cobrir o elemento focado. */
+  scroll-padding-top: calc(3.5rem + 1px + env(safe-area-inset-top) + 0.5rem);
+}
+
 body {
   @apply bg-surface font-sans text-ink antialiased;
   -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 :focus-visible {

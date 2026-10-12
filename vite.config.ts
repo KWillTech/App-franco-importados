@@ -27,5 +27,17 @@ export default defineConfig({
       },
     }),
   ],
+  build: {
+    rollupOptions: {
+      output: {
+        // Bibliotecas em pedaços próprios: ficam em cache entre versões do app e nenhum passa de 500 kB.
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          supabase: ['@supabase/supabase-js'],
+          query: ['@tanstack/react-query'],
+        },
+      },
+    },
+  },
   test: { environment: 'node', testTimeout: 30000 },
 } as any)

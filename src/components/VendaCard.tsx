@@ -4,17 +4,24 @@ import { Link } from 'react-router-dom'
 import { useExcluirVenda } from '@/lib/api'
 import { FORMAS, lucro, proximaAberta, restante, statusVenda, type VendaCompleta } from '@/lib/domain'
 import { brl, dataBR } from '@/lib/format'
-import { Button, Card, ErrorBox, Info, StatusBadge, buttonClass } from './ui'
+import { Button, Card, ErrorBox, Info, StatusBadge, buttonClass, useConfirmacao } from './ui'
 
 export function VendaCard({ venda, onPagar }: { venda: VendaCompleta; onPagar: () => void }) {
   const excluir = useExcluirVenda()
+  const [confirmar, dialogo] = useConfirmacao()
   const status = statusVenda(venda.parcelas)
   const restantes = venda.parcelas.filter((p) => restante(p) > 0).length
   const valorParcela = (proximaAberta(venda.parcelas) ?? venda.parcelas[0])?.valor
   const l = lucro(venda)
 
   async function remover() {
-    if (!confirm(`Excluir a venda de ${venda.produto} para ${venda.cliente.nome}? As parcelas também serão apagadas.`)) return
+    const ok = await confirmar({
+      titulo: 'Excluir venda',
+      mensagem: `Excluir a venda de ${venda.produto} para ${venda.cliente.nome}? As parcelas também serão apagadas. Esta ação não pode ser desfeita.`,
+      acao: 'Excluir',
+      tom: 'danger',
+    })
+    if (!ok) return
     try {
       await excluir.mutateAsync(venda.id)
     } catch {
@@ -66,6 +73,7 @@ export function VendaCard({ venda, onPagar }: { venda: VendaCompleta; onPagar: (
           Excluir
         </Button>
       </div>
+      {dialogo}
     </Card>
   )
 }

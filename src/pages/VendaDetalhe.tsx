@@ -3,7 +3,7 @@ import { MessageCircle } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { PagarModal } from '@/components/PagarModal'
-import { Button, Card, Empty, ErrorBox, Info, Loading, PageHeader, StatusBadge, buttonClass } from '@/components/ui'
+import { Button, Card, Empty, ErrorBox, Info, Loading, PageHeader, StatusBadge, buttonClass, useConfirmacao } from '@/components/ui'
 import { useAtualizarParcelas, useExcluirVenda, useVendas } from '@/lib/api'
 import { FORMAS, lucro, proximaAberta, restante, saldoDevedor, statusParcela, statusVenda, type Parcela } from '@/lib/domain'
 import { brl, dataBR, mensagemCobranca, whatsapp } from '@/lib/format'
@@ -14,6 +14,7 @@ export default function VendaDetalhe() {
   const atualizar = useAtualizarParcelas()
   const excluir = useExcluirVenda()
   const navigate = useNavigate()
+  const [confirmar, dialogo] = useConfirmacao()
   const [pagando, setPagando] = useState<{ parcela?: Parcela } | null>(null)
 
   if (vendas.isLoading) return <Loading />
@@ -29,7 +30,12 @@ export default function VendaDetalhe() {
   const link = proxima ? whatsapp(v.cliente.telefone, mensagemCobranca(v.cliente.nome, restante(proxima), proxima.vencimento)) : null
 
   async function desfazer(p: Parcela) {
-    if (!confirm(`Desfazer o pagamento da parcela ${p.numero}?`)) return
+    const ok = await confirmar({
+      titulo: 'Desfazer pagamento',
+      mensagem: `Desfazer o pagamento da parcela ${p.numero}? O valor pago volta a ficar em aberto.`,
+      acao: 'Desfazer',
+    })
+    if (!ok) return
     try {
       await atualizar.mutateAsync([{ id: p.id, valor_pago: 0, data_pagamento: null }])
     } catch {
@@ -38,7 +44,13 @@ export default function VendaDetalhe() {
   }
 
   async function remover() {
-    if (!confirm(`Excluir a venda de ${v.produto} para ${v.cliente.nome}? As parcelas também serão apagadas.`)) return
+    const ok = await confirmar({
+      titulo: 'Excluir venda',
+      mensagem: `Excluir a venda de ${v.produto} para ${v.cliente.nome}? As parcelas também serão apagadas. Esta ação não pode ser desfeita.`,
+      acao: 'Excluir',
+      tom: 'danger',
+    })
+    if (!ok) return
     try {
       await excluir.mutateAsync(v.id)
       navigate('/vendas', { replace: true })
@@ -136,6 +148,7 @@ export default function VendaDetalhe() {
         </ul>
       )}
       {pagando && <PagarModal venda={v} parcela={pagando.parcela} onClose={() => setPagando(null)} />}
+      {dialogo}
     </>
   )
 }

@@ -4,7 +4,7 @@ import { Plus } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ClienteForm } from '@/components/ClienteForm'
-import { Alert, Button, Empty, ErrorBox, Field, Info, Input, Loading, PageHeader, Select, Textarea } from '@/components/ui'
+import { Alert, Button, Empty, ErrorBox, Field, Info, Input, Loading, PageHeader, Select, Textarea, useConfirmacao } from '@/components/ui'
 import { useClientes, useSalvarVenda, useVendas } from '@/lib/api'
 import {
   FORMAS,
@@ -34,6 +34,7 @@ export default function VendaForm() {
 function Formulario({ venda, clientes, clienteInicial }: { venda?: VendaCompleta; clientes: Cliente[]; clienteInicial: string }) {
   const navigate = useNavigate()
   const salvar = useSalvarVenda()
+  const [confirmar, dialogo] = useConfirmacao()
   const [clienteId, setClienteId] = useState(venda?.cliente_id ?? clienteInicial)
   const [produto, setProduto] = useState(venda?.produto ?? '')
   const [dataVenda, setDataVenda] = useState(venda?.data_venda ?? hoje())
@@ -73,14 +74,23 @@ function Formulario({ venda, clientes, clienteInicial }: { venda?: VendaCompleta
     ...mantidas.map((p) => ({ numero: p.numero, vencimento: p.vencimento, valor: p.valor, comPagamento: true })),
     ...novas.map((p) => ({ ...p, comPagamento: false })),
   ].sort((a, b) => a.numero - b.numero)
-  const problema = invalido ?? erroParcelas
+  const erroData = dataVenda ? null : 'Informe a data da venda.'
+  const problema = erroData ?? invalido ?? erroParcelas
   const lucro = dados.valorVenda - dados.capitalProprio
 
   async function enviar(e: FormEvent) {
     e.preventDefault()
     setTentou(true)
     if (problema) return
-    if (mantidas.length > 0 && !confirm(`${mantidas.length} parcela(s) com pagamento serão mantidas e as demais recalculadas. Continuar?`)) return
+    if (
+      mantidas.length > 0 &&
+      !(await confirmar({
+        titulo: 'Recalcular parcelas',
+        mensagem: `${mantidas.length} parcela(s) com pagamento serão mantidas e as demais recalculadas. Continuar?`,
+        acao: 'Continuar',
+      }))
+    )
+      return
     try {
       const vendaId = await salvar.mutateAsync({
         venda: {
@@ -122,7 +132,7 @@ function Formulario({ venda, clientes, clienteInicial }: { venda?: VendaCompleta
                 </Select>
               </Field>
             </div>
-            <Button type="button" variant="secondary" className="px-3" onClick={() => setNovoCliente(true)} aria-label="Cadastrar novo cliente">
+            <Button type="button" variant="secondary" size="icon" onClick={() => setNovoCliente(true)} aria-label="Cadastrar novo cliente">
               <Plus size={18} strokeWidth={1.5} aria-hidden="true" />
             </Button>
           </div>
@@ -130,7 +140,7 @@ function Formulario({ venda, clientes, clienteInicial }: { venda?: VendaCompleta
             <Input value={produto} onChange={(e) => setProduto(e.target.value)} placeholder="Ex.: iPhone 16 branco" autoComplete="off" />
           </Field>
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Data da venda">
+            <Field label="Data da venda" error={tentou && erroData ? erroData : undefined}>
               <Input type="date" value={dataVenda} onChange={(e) => setDataVenda(e.target.value)} />
             </Field>
             <Field label="Forma de pagamento">
@@ -205,6 +215,7 @@ function Formulario({ venda, clientes, clienteInicial }: { venda?: VendaCompleta
         </div>
       </form>
       {novoCliente && <ClienteForm onClose={() => setNovoCliente(false)} onSaved={(c) => setClienteId(c.id)} />}
+      {dialogo}
     </>
   )
 }
