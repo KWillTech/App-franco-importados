@@ -6,6 +6,7 @@ import Configuracoes from './pages/Configuracoes'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Vendas from './pages/Vendas'
+import VendaForm from './pages/VendaForm'
 
 export default function App() {
   return (
@@ -22,6 +23,8 @@ export default function App() {
         <Route path="configuracoes" element={<Configuracoes />} />
         <Route path="clientes" element={<Clientes />} />
         <Route path="vendas" element={<Vendas />} />
+        <Route path="vendas/nova" element={<VendaForm />} />
+        <Route path="vendas/:id/editar" element={<VendaForm />} />
         {/* rotas */}
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
