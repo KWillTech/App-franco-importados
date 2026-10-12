@@ -1,12 +1,19 @@
 import { describe, expect, it } from 'vitest'
 import {
+  agruparAgenda,
+  clientesComAtraso,
   dividir,
   distribuirPagamento,
   gerarParcelas,
+  maioresDevedores,
   recalcularParcelas,
   resumo,
+  resumoMensal,
+  saldoPorCliente,
   statusParcela,
   statusVenda,
+  validarVenda,
+  type Cliente,
   type Parcela,
   type VendaCompleta,
 } from './domain'
@@ -134,5 +141,137 @@ describe('resumo', () => {
       emAberto: 400,
       emAtraso: 200,
     })
+  })
+})
+
+const cli = (id: string, nome: string): Cliente => ({
+  id,
+  nome,
+  telefone: null,
+  cpf: null,
+  endereco: null,
+  observacao: null,
+  created_at: '',
+})
+
+const venda = (o: Partial<VendaCompleta> & { parcelas: Parcela[] }): VendaCompleta => ({
+  id: 'v1',
+  cliente_id: 'c1',
+  cliente: cli('c1', 'Ana'),
+  produto: 'iPhone',
+  data_venda: '2026-10-01',
+  forma_pagamento: 'boleto',
+  capital_proprio: 600,
+  valor_venda: 1000,
+  entrada: 400,
+  num_parcelas: o.parcelas.length,
+  primeiro_vencimento: '2026-10-01',
+  observacao: null,
+  created_at: '',
+  ...o,
+})
+
+describe('validarVenda', () => {
+  const ok = {
+    clienteId: 'c1',
+    produto: 'iPhone',
+    valorVenda: 1000,
+    entrada: 200,
+    capitalProprio: 600,
+    numParcelas: 4,
+    primeiroVencimento: '2026-11-01',
+  }
+
+  it('aceita uma venda válida', () => {
+    expect(validarVenda(ok)).toBeNull()
+    expect(validarVenda({ ...ok, entrada: 1000, numParcelas: 0, primeiroVencimento: '' })).toBeNull()
+  })
+
+  it.each([
+    [{ clienteId: '' }, 'Escolha o cliente.'],
+    [{ produto: '   ' }, 'Informe o produto.'],
+    [{ valorVenda: 0 }, 'Informe o valor da venda.'],
+    [{ entrada: 1200 }, 'A entrada não pode ser maior que o valor da venda.'],
+    [{ numParcelas: 2.5 }, 'O número de parcelas deve ser um número inteiro de 0 a 120.'],
+    [{ numParcelas: 121 }, 'O número de parcelas deve ser um número inteiro de 0 a 120.'],
+    [{ numParcelas: 0 }, 'Venda à vista: a entrada deve ser igual ao valor da venda.'],
+    [{ entrada: 1000 }, 'A entrada já cobre o valor da venda: use 0 parcelas.'],
+    [{ primeiroVencimento: '' }, 'Informe o 1º vencimento.'],
+  ])('recusa %o', (troca, mensagem) => {
+    expect(validarVenda({ ...ok, ...troca })).toBe(mensagem)
+  })
+})
+
+describe('distribuirPagamento com valor inválido', () => {
+  it('não grava nada para zero ou negativo', () => {
+    const ps = [parcela({ numero: 1 })]
+    expect(distribuirPagamento(ps, 0, '2026-10-05')).toEqual({ updates: [], troco: 0 })
+    expect(distribuirPagamento(ps, -10, '2026-10-05')).toEqual({ updates: [], troco: 0 })
+  })
+})
+
+describe('agruparAgenda', () => {
+  it('separa atrasadas, hoje, próximos 7 dias e restante do mês', () => {
+    const v = venda({
+      parcelas: [
+        parcela({ id: 'a', numero: 1, vencimento: '2026-10-01' }),
+        parcela({ id: 'b', numero: 2, vencimento: '2026-10-12' }),
+        parcela({ id: 'c', numero: 3, vencimento: '2026-10-19' }),
+        parcela({ id: 'd', numero: 4, vencimento: '2026-10-25' }),
+        parcela({ id: 'e', numero: 5, vencimento: '2026-11-05' }),
+        parcela({ id: 'f', numero: 6, vencimento: '2026-10-02', valor_pago: 100 }),
+      ],
+    })
+    const g = agruparAgenda([v], '2026-10-12')
+    const ids = (xs: { parcela: Parcela }[]) => xs.map((x) => x.parcela.id)
+    expect(ids(g.atrasadas)).toEqual(['a'])
+    expect(ids(g.hoje)).toEqual(['b'])
+    expect(ids(g.semana)).toEqual(['c'])
+    expect(ids(g.mes)).toEqual(['d'])
+  })
+})
+
+describe('resumoMensal', () => {
+  it('soma vendido, lucro e recebido (entradas + parcelas) por mês', () => {
+    const outubro = venda({
+      parcelas: [parcela({ numero: 1, valor: 200, valor_pago: 200, data_pagamento: '2026-10-02' })],
+    })
+    const setembro = venda({
+      id: 'v2',
+      data_venda: '2026-09-10',
+      valor_venda: 500,
+      capital_proprio: 300,
+      entrada: 100,
+      parcelas: [parcela({ numero: 1, valor: 400, valor_pago: 100, data_pagamento: '2026-10-05' })],
+    })
+    expect(resumoMensal([outubro, setembro], 2, '2026-10-20')).toEqual([
+      { mes: '2026-10', vendido: 1000, recebido: 700, lucro: 400 },
+      { mes: '2026-09', vendido: 500, recebido: 100, lucro: 200 },
+    ])
+  })
+})
+
+describe('devedores', () => {
+  const vendas = [
+    venda({
+      parcelas: [
+        parcela({ numero: 1, valor: 200, vencimento: '2026-10-01' }),
+        parcela({ numero: 2, valor: 200, vencimento: '2026-11-01' }),
+      ],
+    }),
+    venda({ id: 'v2', cliente_id: 'c2', cliente: cli('c2', 'Bia'), parcelas: [parcela({ valor: 300, vencimento: '2026-11-01' })] }),
+    venda({ id: 'v3', cliente_id: 'c3', cliente: cli('c3', 'Caio'), parcelas: [parcela({ valor: 300, valor_pago: 300 })] }),
+  ]
+
+  it('ordena por saldo e separa o que está atrasado', () => {
+    expect(maioresDevedores(vendas, 10, '2026-10-12').map((d) => [d.cliente.id, d.saldo, d.atrasado])).toEqual([
+      ['c1', 400, 200],
+      ['c2', 300, 0],
+    ])
+  })
+
+  it('expõe saldo por cliente e quem está em atraso', () => {
+    expect(saldoPorCliente(vendas, '2026-10-12').get('c2')).toBe(300)
+    expect([...clientesComAtraso(vendas, '2026-10-12')]).toEqual(['c1'])
   })
 })
