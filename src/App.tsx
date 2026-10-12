@@ -8,6 +8,8 @@ import Configuracoes from './pages/Configuracoes'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Parcelas from './pages/Parcelas'
+import Pesquisa from './pages/Pesquisa'
+import Relatorios from './pages/Relatorios'
 import Vendas from './pages/Vendas'
 import VendaDetalhe from './pages/VendaDetalhe'
 import VendaForm from './pages/VendaForm'
@@ -33,7 +35,8 @@ export default function App() {
         <Route path="clientes/:id" element={<ClienteDetalhe />} />
         <Route path="parcelas" element={<Parcelas />} />
         <Route path="agenda" element={<Agenda />} />
-        {/* rotas */}
+        <Route path="pesquisa" element={<Pesquisa />} />
+        <Route path="relatorios" element={<Relatorios />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
