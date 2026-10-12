@@ -70,9 +70,8 @@ export function Layout() {
       <aside
         className={clsx(
           'fixed inset-y-0 left-0 z-50 flex w-72 flex-col bg-surface-inverse pt-[env(safe-area-inset-top)] text-ink-inverse shadow-lg transition-transform duration-200',
-          aberto ? 'translate-x-0' : '-translate-x-full',
+          aberto ? 'visible translate-x-0' : 'invisible -translate-x-full',
         )}
-        aria-hidden={!aberto}
       >
         <div className="flex items-center justify-between px-4 py-4">
           <Logo inverse className="h-12 dark:hidden" />

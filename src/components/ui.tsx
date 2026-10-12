@@ -2,37 +2,76 @@
 // monocromático, cantos retos, rótulos em caixa alta espaçada, fios de 1px em vez de sombras.
 import clsx from 'clsx'
 import { X } from 'lucide-react'
-import { useEffect, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes } from 'react'
-import type { StatusParcela, StatusVenda } from '@/lib/domain'
+import {
+  useEffect,
+  type ButtonHTMLAttributes,
+  type InputHTMLAttributes,
+  type ReactNode,
+  type SelectHTMLAttributes,
+  type TextareaHTMLAttributes,
+} from 'react'
+import { ROTULO_STATUS, type StatusParcela, type StatusVenda } from '@/lib/domain'
 
 type Variante = 'primary' | 'secondary' | 'ghost' | 'danger'
 
 const variantes: Record<Variante, string> = {
   primary: 'bg-brand text-on-brand border-transparent hover:bg-brand-hover',
   secondary: 'bg-transparent text-ink border-ink hover:bg-ink hover:text-ink-inverse',
-  ghost: 'bg-transparent text-ink border-transparent underline underline-offset-[6px] decoration-1 hover:text-ink-muted px-2',
+  ghost: 'bg-transparent text-ink border-transparent underline underline-offset-[6px] decoration-1 hover:text-ink-muted',
   danger: 'bg-transparent text-danger border-danger hover:bg-danger-bg',
 }
 
+/** Classes de botão; use em <Link>/<a> que precisam parecer botão. */
+export function buttonClass({ variant = 'primary', size = 'md', full }: { variant?: Variante; size?: 'sm' | 'md'; full?: boolean } = {}) {
+  return clsx(
+    'label inline-flex items-center justify-center gap-2 whitespace-nowrap border transition-colors duration-150',
+    'disabled:cursor-not-allowed disabled:border-line disabled:bg-surface disabled:text-ink-subtle',
+    size === 'sm' ? 'h-11 px-3 text-[11px]' : 'h-control px-6',
+    full && 'w-full',
+    variantes[variant],
+  )
+}
+
 export function Button({
-  variant = 'primary',
-  size = 'md',
+  variant,
+  size,
   full,
   className,
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variante; size?: 'sm' | 'md'; full?: boolean }) {
+  return <button className={clsx(buttonClass({ variant, size, full }), className)} {...props} />
+}
+
+/** Filtros em chips (únicos elementos, com o contador, que usam radius-pill). */
+export function Chips<T extends string>({
+  label,
+  value,
+  onChange,
+  options,
+}: {
+  label: string
+  value: T
+  onChange: (v: T) => void
+  options: [T, string][]
+}) {
   return (
-    <button
-      className={clsx(
-        'label inline-flex items-center justify-center gap-2 whitespace-nowrap border transition-colors duration-150',
-        'disabled:cursor-not-allowed disabled:border-line disabled:bg-surface disabled:text-ink-subtle',
-        size === 'sm' ? 'h-10 px-3 text-[11px]' : 'h-control px-6',
-        full && 'w-full',
-        variantes[variant],
-        className,
-      )}
-      {...props}
-    />
+    <div role="radiogroup" aria-label={label} className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+      {options.map(([v, rotulo]) => (
+        <button
+          key={v}
+          type="button"
+          role="radio"
+          aria-checked={value === v}
+          onClick={() => onChange(v)}
+          className={clsx(
+            'h-11 shrink-0 rounded-pill border px-4 text-sm transition-colors duration-150',
+            value === v ? 'border-brand bg-brand text-on-brand' : 'border-line-strong bg-surface-raised text-ink hover:border-ink',
+          )}
+        >
+          {rotulo}
+        </button>
+      ))}
+    </div>
   )
 }
 
@@ -68,22 +107,25 @@ export function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectE
   return <select className={clsx(campo, 'pr-8', className)} {...props} />
 }
 
-export function Textarea(props: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
   return <textarea className={clsx(campo, 'h-24 py-3')} {...props} />
 }
 
-const estilosStatus: Record<StatusVenda | StatusParcela, [string, string]> = {
-  em_dia: ['Em dia', 'bg-surface text-ink border border-line'],
-  aberta: ['Aberta', 'bg-surface text-ink border border-line'],
-  atrasada: ['Atrasada', 'bg-danger-bg text-danger'],
-  quitada: ['Quitada', 'bg-success-bg text-success'],
-  paga: ['Paga', 'bg-success-bg text-success'],
+const estilosStatus: Record<StatusVenda | StatusParcela, string> = {
+  em_dia: 'bg-surface text-ink border border-line',
+  aberta: 'bg-surface text-ink border border-line',
+  atrasada: 'bg-danger-bg text-danger',
+  quitada: 'bg-success-bg text-success',
+  paga: 'bg-success-bg text-success',
 }
 
 /** Selo de status: a cor é só reforço, o texto sempre diz o estado. */
 export function StatusBadge({ status }: { status: StatusVenda | StatusParcela }) {
-  const [rotulo, cls] = estilosStatus[status]
-  return <span className={clsx('inline-flex rounded-sm px-2 py-1 text-[11px] font-medium uppercase leading-[14px] tracking-label', cls)}>{rotulo}</span>
+  return (
+    <span className={clsx('inline-flex shrink-0 rounded-sm px-2 py-1 text-[11px] font-medium uppercase leading-[14px] tracking-label', estilosStatus[status])}>
+      {ROTULO_STATUS[status]}
+    </span>
+  )
 }
 
 export function Info({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
@@ -100,7 +142,7 @@ export function PageHeader({ title, eyebrow, subtitle, action }: { title: string
     <div className="mb-6 flex items-end justify-between gap-4 border-b border-line pb-4">
       <div className="min-w-0">
         {eyebrow && <p className="eyebrow">{eyebrow}</p>}
-        <h1 className="mt-1 font-display text-[32px] font-semibold leading-10">{title}</h1>
+        <h1 className="mt-1 break-words font-display text-[32px] font-semibold leading-10">{title}</h1>
         {subtitle && <p className="mt-1 text-sm text-ink-muted">{subtitle}</p>}
       </div>
       {action}
@@ -174,7 +216,15 @@ export function ErrorBox({ error }: { error: unknown }) {
 export function SearchInput(props: InputHTMLAttributes<HTMLInputElement>) {
   return (
     <div className="relative">
-      <svg className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-subtle" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="square">
+      <svg
+        className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-subtle"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="square"
+        aria-hidden="true"
+      >
         <circle cx="11" cy="11" r="7" />
         <path d="m20 20-4-4" />
       </svg>

@@ -76,7 +76,7 @@ export function useExcluirCliente() {
       const { error } = await supabase.from('clientes').delete().eq('id', id)
       if (error) {
         throw new Error(
-          error.code === '23503' ? 'Este cliente tem vendas. Exclua as vendas primeiro.' : error.message,
+          error.code === '23001' || error.code === '23503' ? 'Este cliente tem vendas. Exclua as vendas primeiro.' : error.message,
         )
       }
     },
