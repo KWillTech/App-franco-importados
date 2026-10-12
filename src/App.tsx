@@ -1,11 +1,13 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { RequireAuth } from './auth'
 import { Layout } from './components/Layout'
+import Agenda from './pages/Agenda'
 import ClienteDetalhe from './pages/ClienteDetalhe'
 import Clientes from './pages/Clientes'
 import Configuracoes from './pages/Configuracoes'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
+import Parcelas from './pages/Parcelas'
 import Vendas from './pages/Vendas'
 import VendaDetalhe from './pages/VendaDetalhe'
 import VendaForm from './pages/VendaForm'
@@ -29,6 +31,8 @@ export default function App() {
         <Route path="vendas/:id/editar" element={<VendaForm />} />
         <Route path="vendas/:id" element={<VendaDetalhe />} />
         <Route path="clientes/:id" element={<ClienteDetalhe />} />
+        <Route path="parcelas" element={<Parcelas />} />
+        <Route path="agenda" element={<Agenda />} />
         {/* rotas */}
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
