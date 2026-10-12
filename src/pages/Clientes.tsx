@@ -32,7 +32,7 @@ export default function Clientes() {
       <div className="mb-4">
         <SearchInput placeholder="Nome, telefone ou CPF" aria-label="Buscar clientes" value={busca} onChange={(e) => setBusca(e.target.value)} />
       </div>
-      <ErrorBox error={clientes.error} />
+      <ErrorBox error={clientes.error ?? vendas.error} />
       {clientes.isLoading ? (
         <Loading />
       ) : lista.length === 0 ? (
@@ -46,10 +46,9 @@ export default function Clientes() {
                 <Link to={`/clientes/${c.id}`} className="flex min-h-16 items-center gap-3 px-4 py-3 hover:bg-surface">
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{c.nome}</div>
-                    <div className="truncate text-sm text-ink-muted">{c.telefone || 'Sem telefone'}</div>
+                    <div className="tabular truncate text-sm text-ink-muted">{c.telefone || 'Sem telefone'}{saldo > 0 && ` · ${brl(saldo)} em aberto`}</div>
                   </div>
                   {atrasados.has(c.id) && <StatusBadge status="atrasada" />}
-                  {saldo > 0 && <span className="tabular hidden text-sm text-ink-muted sm:inline">{brl(saldo)}</span>}
                   <ChevronRight size={18} strokeWidth={1.5} className="shrink-0 text-ink-subtle" aria-hidden="true" />
                 </Link>
               </li>
