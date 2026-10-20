@@ -12,8 +12,10 @@ PWA (React + Vite + TypeScript + Tailwind) com Supabase para gestão de clientes
 
 ## Convenções
 - Regras de negócio só em `src/lib/domain.ts` (funções puras, testadas em `domain.test.ts`). Telas não calculam.
-- Visual: design system Franco Importados (tokens em `src/index.css` e `tailwind.config.js`). Monocromático,
-  cantos retos, cor só como feedback (`danger`/`success`) e sempre com texto. Use os componentes de
+- Visual: padrão premium do painel do site Franco Importados (tokens em `src/index.css` e `tailwind.config.js`):
+  azul-marinho + dourado, fonte Montserrat, cartões arredondados com sombra suave, botões e filtros em pílula,
+  cartões numerados (`Secao`), indicadores com ícone (`Indicador`), listas em cartão (classe `lista`).
+  Vermelho/verde só como feedback (`danger`/`success`) e sempre com texto. Use os componentes de
   `src/components/ui.tsx`; para links com cara de botão, `buttonClass()`. Confirmações com `useConfirmacao()`
   (nunca `confirm()` do navegador); diálogos sempre pelo `Modal` (prende o foco e devolve ao fechar).
 - Textos em pt-BR, tratando por "você"; botões no infinitivo; valores com `brl()`, datas com `dataBR()`.

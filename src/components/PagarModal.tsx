@@ -3,6 +3,7 @@ import { useAtualizarParcelas } from '@/lib/api'
 import { distribuirPagamento, hoje, proximaAberta, restante, saldoDevedor, type Parcela, type VendaCompleta } from '@/lib/domain'
 import { brl, parseValor, valorInput } from '@/lib/format'
 import { Button, ErrorBox, Field, Info, Input, Modal } from './ui'
+import { CalendarDays, CircleDollarSign } from 'lucide-react'
 
 export function PagarModal({ venda, parcela, onClose }: { venda: VendaCompleta; parcela?: Parcela; onClose: () => void }) {
   const atualizar = useAtualizarParcelas()
@@ -44,11 +45,11 @@ export function PagarModal({ venda, parcela, onClose }: { venda: VendaCompleta; 
         <p className="text-sm text-ink-muted">
           {venda.cliente.nome} · {venda.produto}
         </p>
-        <div className="grid grid-cols-2 gap-px border border-line bg-line">
-          <div className="bg-surface-raised p-3">
-            <Info label={`Parcela ${primeira.numero}`}>{brl(restante(primeira))}</Info>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-field bg-surface-sunken p-3">
+            <Info label={`Parcela ${primeira.numero}`} className="font-bold">{brl(restante(primeira))}</Info>
           </div>
-          <div className="bg-surface-raised p-3">
+          <div className="rounded-field bg-surface-sunken p-3">
             <Info label={parcela ? 'Valor da parcela' : 'Saldo da venda'}>{brl(parcela ? parcela.valor : saldo)}</Info>
           </div>
         </div>
@@ -58,6 +59,7 @@ export function PagarModal({ venda, parcela, onClose }: { venda: VendaCompleta; 
           hint={parcela ? 'Valor menor fica como pagamento parcial.' : 'Valor menor fica como pagamento parcial; maior abate as próximas parcelas.'}
         >
           <Input
+            icon={CircleDollarSign}
             value={valor}
             onChange={(e) => {
               setValor(e.target.value)
@@ -70,6 +72,7 @@ export function PagarModal({ venda, parcela, onClose }: { venda: VendaCompleta; 
         </Field>
         <Field label="Data do pagamento" error={erroData}>
           <Input
+            icon={CalendarDays}
             type="date"
             value={dataPagamento}
             max={hoje()}
@@ -80,7 +83,7 @@ export function PagarModal({ venda, parcela, onClose }: { venda: VendaCompleta; 
           />
         </Field>
         {v > 0 && troco === 0 && updates.length > 0 && (
-          <ul className="tabular flex flex-col gap-1 text-sm text-ink-muted">
+          <ul className="tabular flex flex-col gap-1 rounded-field border border-dashed border-speckle bg-surface-field p-3 text-sm text-ink-muted">
             {updates.map((u) => {
               const p = alvo.find((x) => x.id === u.id)!
               return (

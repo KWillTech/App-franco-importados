@@ -1,6 +1,6 @@
 import { ChevronRight } from 'lucide-react'
 import { Link, useSearchParams } from 'react-router-dom'
-import { Empty, ErrorBox, Loading, PageHeader, SearchInput, StatusBadge } from '@/components/ui'
+import { Avatar, Empty, ErrorBox, Loading, PageHeader, SearchInput, StatusBadge } from '@/components/ui'
 import { useClientes, useVendas } from '@/lib/api'
 import { statusVenda } from '@/lib/domain'
 import { combina, dataBR, normalizar } from '@/lib/format'
@@ -20,7 +20,7 @@ export default function Pesquisa() {
 
   return (
     <>
-      <PageHeader title="Pesquisa" />
+      <PageHeader title="Pesquisa" subtitle="Encontre clientes e vendas." />
       <div className="mb-6">
         <SearchInput
           autoFocus
@@ -42,15 +42,16 @@ export default function Pesquisa() {
           {achadosClientes.length > 0 && (
             <section>
               <h2 className="eyebrow mb-3">Clientes</h2>
-              <ul className="divide-y divide-line border border-line bg-surface-raised">
+              <ul className="lista">
                 {achadosClientes.map((c) => (
                   <li key={c.id}>
-                    <Link to={`/clientes/${c.id}`} className="flex min-h-14 items-center gap-3 px-4 py-3 hover:bg-surface">
+                    <Link to={`/clientes/${c.id}`} className="flex min-h-14 items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-sunken/60">
+                      <Avatar nome={c.nome} />
                       <div className="min-w-0 flex-1">
-                        <div className="truncate font-medium">{c.nome}</div>
+                        <div className="truncate font-semibold">{c.nome}</div>
                         <div className="truncate text-sm text-ink-muted">{c.telefone || 'Sem telefone'}</div>
                       </div>
-                      <ChevronRight size={18} strokeWidth={1.5} className="shrink-0 text-ink-subtle" aria-hidden="true" />
+                      <ChevronRight size={14} strokeWidth={2} className="h-[26px] w-[26px] shrink-0 rounded-pill bg-surface-sunken p-1.5 text-ink-subtle" aria-hidden="true" />
                     </Link>
                   </li>
                 ))}
@@ -60,12 +61,12 @@ export default function Pesquisa() {
           {achadosVendas.length > 0 && (
             <section>
               <h2 className="eyebrow mb-3">Vendas</h2>
-              <ul className="divide-y divide-line border border-line bg-surface-raised">
+              <ul className="lista">
                 {achadosVendas.map((v) => (
                   <li key={v.id}>
-                    <Link to={`/vendas/${v.id}`} className="flex min-h-14 items-center gap-3 px-4 py-3 hover:bg-surface">
+                    <Link to={`/vendas/${v.id}`} className="flex min-h-14 items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-sunken/60">
                       <div className="min-w-0 flex-1">
-                        <div className="truncate font-medium">{v.produto}</div>
+                        <div className="truncate font-semibold">{v.produto}</div>
                         <div className="truncate text-sm text-ink-muted">
                           {v.cliente.nome} · {dataBR(v.data_venda)}
                         </div>

@@ -33,7 +33,7 @@ export default function Parcelas() {
 
   return (
     <>
-      <PageHeader title="Parcelas" subtitle={`${itens.length} ${itens.length === 1 ? 'parcela' : 'parcelas'} · ${brl(total)}`} />
+      <PageHeader eyebrow="Contas a receber" title="Parcelas" subtitle={`${itens.length} ${itens.length === 1 ? 'parcela' : 'parcelas'} · ${brl(total)}`} />
       <div className="mb-4">
         <Chips
           label="Filtrar parcelas"
@@ -53,7 +53,7 @@ export default function Parcelas() {
       ) : itens.length === 0 ? (
         <Empty>Nenhuma parcela neste filtro.</Empty>
       ) : (
-        <ul className="divide-y divide-line border border-line bg-surface-raised">
+        <ul className="lista">
           {itens.map((i) => (
             <ParcelaItem key={i.parcela.id} {...i} onPagar={() => setPagando(i)} />
           ))}

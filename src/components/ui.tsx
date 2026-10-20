@@ -1,7 +1,7 @@
-// Componentes base no padrão do design system Franco Importados:
-// monocromático, cantos retos, rótulos em caixa alta espaçada, fios de 1px em vez de sombras.
+// Componentes base no padrão premium do painel do site Franco Importados:
+// azul-marinho + dourado, cartões arredondados com sombra suave, botões em pílula e passos numerados.
 import clsx from 'clsx'
-import { X } from 'lucide-react'
+import { Search, X, type LucideIcon } from 'lucide-react'
 import {
   Children,
   cloneElement,
@@ -21,13 +21,14 @@ import {
 } from 'react'
 import { ROTULO_STATUS, type StatusParcela, type StatusVenda } from '@/lib/domain'
 
-type Variante = 'primary' | 'secondary' | 'ghost' | 'danger'
+type Variante = 'primary' | 'secondary' | 'ghost' | 'danger' | 'gold'
 
 const variantes: Record<Variante, string> = {
-  primary: 'bg-brand text-on-brand border-transparent hover:bg-brand-hover',
-  secondary: 'bg-transparent text-ink border-ink hover:bg-ink hover:text-ink-inverse',
-  ghost: 'bg-transparent text-ink border-transparent underline underline-offset-[6px] decoration-1 hover:text-ink-muted',
-  danger: 'bg-transparent text-danger border-danger hover:bg-danger-bg',
+  primary: 'bg-brand text-on-brand border-transparent shadow-elevada hover:bg-brand-hover',
+  secondary: 'bg-surface-raised text-ink border-line-strong hover:border-ink',
+  ghost: 'bg-transparent text-ink border-transparent hover:bg-surface-sunken',
+  danger: 'bg-surface-raised text-danger border-line-strong hover:border-danger hover:bg-danger-bg',
+  gold: 'bg-gold text-[rgb(14_23_51)] border-transparent hover:brightness-105',
 }
 
 /** Classes de botão; use em <Link>/<a> que precisam parecer botão. */
@@ -35,9 +36,9 @@ type Tamanho = 'sm' | 'md' | 'icon'
 
 export function buttonClass({ variant = 'primary', size = 'md', full }: { variant?: Variante; size?: Tamanho; full?: boolean } = {}) {
   return clsx(
-    'label inline-flex items-center justify-center gap-2 whitespace-nowrap border transition-colors duration-150',
-    'disabled:cursor-not-allowed disabled:border-line disabled:bg-surface disabled:text-ink-subtle',
-    size === 'sm' ? 'h-11 px-3 text-[11px]' : size === 'icon' ? 'h-control w-12 shrink-0' : 'h-control px-6',
+    'label inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-pill border transition-[color,background-color,border-color,filter] duration-150',
+    'disabled:cursor-not-allowed disabled:border-line disabled:bg-surface-sunken disabled:text-ink-subtle disabled:shadow-none',
+    size === 'sm' ? 'h-11 px-4 text-[11px]' : size === 'icon' ? 'h-control w-[50px] shrink-0' : 'h-control px-6',
     full && 'w-full',
     variantes[variant],
   )
@@ -53,7 +54,7 @@ export function Button({
   return <button className={clsx(buttonClass({ variant, size, full }), className)} {...props} />
 }
 
-/** Filtros em chips (únicos elementos, com o contador, que usam radius-pill). */
+/** Filtros em abas de pílula sobre um trilho cinza (como as abas do painel do site). */
 export function Chips<T extends string>({
   label,
   value,
@@ -77,7 +78,12 @@ export function Chips<T extends string>({
     botoes[proximo]?.focus()
   }
   return (
-    <div role="radiogroup" aria-label={label} onKeyDown={teclas} className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1">
+    <div
+      role="radiogroup"
+      aria-label={label}
+      onKeyDown={teclas}
+      className="flex max-w-full gap-1 overflow-x-auto rounded-pill bg-surface-sunken p-[5px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+    >
       {options.map(([v, rotulo]) => (
         <button
           key={v}
@@ -87,8 +93,8 @@ export function Chips<T extends string>({
           tabIndex={value === v ? 0 : -1}
           onClick={() => onChange(v)}
           className={clsx(
-            'h-11 shrink-0 rounded-pill border px-4 text-sm transition-colors duration-150',
-            value === v ? 'border-brand bg-brand text-on-brand' : 'border-line-strong bg-surface-raised text-ink hover:border-ink',
+            'h-10 flex-1 shrink-0 whitespace-nowrap rounded-pill px-4 text-[13px] font-semibold transition-colors duration-150',
+            value === v ? 'bg-brand text-on-brand shadow-elevada' : 'text-ink-muted hover:bg-surface-raised hover:text-ink',
           )}
         >
           {rotulo}
@@ -99,7 +105,110 @@ export function Chips<T extends string>({
 }
 
 export function Card({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={clsx('border border-line bg-surface-raised p-4', className)}>{children}</div>
+  return <div className={clsx('rounded-card border border-line bg-surface-raised p-5 shadow-card', className)}>{children}</div>
+}
+
+/** Selo quadrado azul-marinho com texto/ícone dourado (número do passo, posição, ícone de indicador). */
+export function Selo({ children, size = 'md', className }: { children: ReactNode; size?: 'sm' | 'md'; className?: string }) {
+  return (
+    <span
+      className={clsx(
+        'grid shrink-0 place-items-center bg-[rgb(14_23_51)] font-bold tracking-[0.06em] text-gold dark:bg-surface-sunken',
+        size === 'sm' ? 'h-9 w-9 rounded-[10px] text-xs' : 'h-10 w-10 rounded-field text-[13px]',
+        className,
+      )}
+    >
+      {children}
+    </span>
+  )
+}
+
+/** Cartão com cabeçalho numerado ("01", "02"…), título e descrição, no padrão das Configurações do site. */
+export function Secao({
+  passo,
+  titulo,
+  descricao,
+  acao,
+  children,
+  className,
+}: {
+  passo?: string
+  titulo: string
+  descricao?: string
+  acao?: ReactNode
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <section className={clsx('rounded-card border border-line bg-surface-raised p-5 shadow-card sm:p-7', className)}>
+      <div className="mb-5 flex items-start gap-4 border-b border-line-soft pb-5">
+        {passo && <Selo>{passo}</Selo>}
+        <div className="min-w-0 flex-1">
+          <h2 className="mt-0.5 text-lg font-bold leading-6">{titulo}</h2>
+          {descricao && <p className="mt-1 text-sm leading-5 text-ink-muted">{descricao}</p>}
+        </div>
+        {acao}
+      </div>
+      {children}
+    </section>
+  )
+}
+
+/** Indicador: ícone em selo, rótulo e valor em destaque. Vira link com `to` (use com <Link>). */
+export function Indicador({
+  icon: Icone,
+  label,
+  valor,
+  tom,
+}: {
+  icon: LucideIcon
+  label: string
+  valor: string
+  tom?: 'success' | 'danger'
+}) {
+  return (
+    <>
+      <Selo size="sm" className="mb-3">
+        <Icone size={17} strokeWidth={1.8} aria-hidden="true" />
+      </Selo>
+      <div className="text-xs font-medium leading-4 text-ink-muted">{label}</div>
+      <div className={clsx('tabular mt-1 break-words text-xl font-bold leading-7', tom === 'success' && 'text-success', tom === 'danger' && 'text-danger')}>
+        {valor}
+      </div>
+    </>
+  )
+}
+
+/** Classe do cartão de indicador (div ou link). */
+export const indicadorClass = (link?: boolean) =>
+  clsx(
+    'block rounded-card border border-line bg-surface-raised p-4 shadow-card transition-shadow duration-150',
+    link && 'hover:shadow-card-hover',
+  )
+
+/** Iniciais do nome num círculo azul-marinho com letras douradas. */
+export function Avatar({ nome, size = 'md', claro, className }: { nome: string; size?: 'sm' | 'md' | 'lg'; claro?: boolean; className?: string }) {
+  const iniciais = nome
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((p) => p[0])
+    .join('')
+    .toUpperCase()
+  return (
+    <span
+      aria-hidden="true"
+      className={clsx(
+        'grid shrink-0 place-items-center rounded-pill font-bold tracking-[0.04em] text-gold',
+        { sm: 'h-9 w-9 text-xs', md: 'h-10 w-10 text-[13px]', lg: 'h-14 w-14 text-base' }[size],
+        claro ? 'bg-white/10' : 'bg-[rgb(14_23_51)] dark:bg-surface-sunken',
+        className,
+      )}
+    >
+      {iniciais || '?'}
+    </span>
+  )
 }
 
 type ControleAria = { 'aria-invalid'?: boolean | 'true' | 'false'; 'aria-describedby'?: string }
@@ -120,10 +229,10 @@ export function Field({ label, children, hint, error }: { label: string; childre
     : children
   return (
     <label className="flex min-w-0 flex-col gap-2">
-      <span className="text-xs font-medium uppercase leading-4 tracking-label">{label}</span>
+      <span className="text-[13px] font-semibold leading-4 tracking-[0.02em]">{label}</span>
       {controle}
       {mensagem && (
-        <span id={msgId} role={error ? 'alert' : undefined} className={clsx('text-xs leading-4', error ? 'text-danger' : 'text-ink-subtle')}>
+        <span id={msgId} role={error ? 'alert' : undefined} className={clsx('text-[12.5px] leading-4', error ? 'font-medium text-danger' : 'text-ink-subtle')}>
           {mensagem}
         </span>
       )}
@@ -131,11 +240,27 @@ export function Field({ label, children, hint, error }: { label: string; childre
   )
 }
 
-const campo =
-  'h-control w-full border border-line-strong bg-surface-raised px-4 text-base text-ink outline-none placeholder:text-ink-subtle hover:border-ink disabled:bg-surface disabled:text-ink-subtle'
+const campo = clsx(
+  'h-control w-full rounded-field border border-line-strong bg-surface-field px-4 text-base text-ink outline-none transition-[border-color,box-shadow,background-color] duration-150',
+  'placeholder:text-ink-subtle/70 hover:border-ink-subtle focus:border-brand focus:bg-surface-raised focus:shadow-[0_0_0_4px_rgb(var(--brand)/0.1)]',
+  'aria-[invalid=true]:border-danger aria-[invalid=true]:shadow-[0_0_0_4px_rgb(var(--danger)/0.08)]',
+  'disabled:bg-surface-sunken disabled:text-ink-subtle',
+)
 
-export function Input({ className, ...props }: InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={clsx(campo, className)} {...props} />
+/** Campo de texto; com `icon`, o ícone fica à esquerda e fica dourado quando o campo recebe o foco. */
+export function Input({ className, icon: Icone, ...props }: InputHTMLAttributes<HTMLInputElement> & { icon?: LucideIcon }) {
+  if (!Icone) return <input className={clsx(campo, className)} {...props} />
+  return (
+    <span className="group relative block">
+      <Icone
+        size={19}
+        strokeWidth={1.7}
+        aria-hidden="true"
+        className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-subtle transition-colors group-focus-within:text-gold"
+      />
+      <input className={clsx(campo, 'pl-11', className)} {...props} />
+    </span>
+  )
 }
 
 export function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectElement>) {
@@ -143,12 +268,12 @@ export function Select({ className, ...props }: SelectHTMLAttributes<HTMLSelectE
 }
 
 export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea className={clsx(campo, 'h-24 py-3')} {...props} />
+  return <textarea className={clsx(campo, 'h-24 py-3 leading-6')} {...props} />
 }
 
 const estilosStatus: Record<StatusVenda | StatusParcela, string> = {
-  em_dia: 'bg-surface text-ink border border-line',
-  aberta: 'bg-surface text-ink border border-line',
+  em_dia: 'bg-surface-sunken text-ink-muted',
+  aberta: 'bg-surface-sunken text-ink-muted',
   atrasada: 'bg-danger-bg text-danger',
   quitada: 'bg-success-bg text-success',
   paga: 'bg-success-bg text-success',
@@ -157,7 +282,7 @@ const estilosStatus: Record<StatusVenda | StatusParcela, string> = {
 /** Selo de status: a cor é só reforço, o texto sempre diz o estado. */
 export function StatusBadge({ status }: { status: StatusVenda | StatusParcela }) {
   return (
-    <span className={clsx('inline-flex shrink-0 rounded-sm px-2 py-1 text-[11px] font-medium uppercase leading-[14px] tracking-label', estilosStatus[status])}>
+    <span className={clsx('inline-flex shrink-0 items-center rounded-pill px-2.5 py-1 text-[10.5px] font-bold uppercase leading-[14px] tracking-[0.06em]', estilosStatus[status])}>
       {ROTULO_STATUS[status]}
     </span>
   )
@@ -166,19 +291,31 @@ export function StatusBadge({ status }: { status: StatusVenda | StatusParcela })
 export function Info({ label, children, className }: { label: string; children: ReactNode; className?: string }) {
   return (
     <div className="min-w-0">
-      <div className="text-xs leading-4 text-ink-subtle">{label}</div>
+      <div className="text-xs font-medium leading-4 text-ink-subtle">{label}</div>
       <div className={clsx('tabular text-sm leading-5 text-ink', className)}>{children}</div>
     </div>
   )
 }
 
-export function PageHeader({ title, eyebrow, subtitle, action }: { title: string; eyebrow?: string; subtitle?: string; action?: ReactNode }) {
+export function PageHeader({
+  title,
+  eyebrow,
+  subtitle,
+  action,
+  className = 'mb-6',
+}: {
+  title: string
+  eyebrow?: string
+  subtitle?: string
+  action?: ReactNode
+  className?: string
+}) {
   return (
-    <div className="mb-6 flex items-end justify-between gap-4 border-b border-line pb-4">
+    <div className={clsx('flex flex-wrap items-end justify-between gap-4', className)}>
       <div className="min-w-0">
-        {eyebrow && <p className="eyebrow">{eyebrow}</p>}
-        <h1 className="mt-1 break-words font-display text-[32px] font-semibold leading-10">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-ink-muted">{subtitle}</p>}
+        {eyebrow && <p className="eyebrow mb-1.5">{eyebrow}</p>}
+        <h1 className="break-words text-[28px] font-bold leading-9 tracking-[-0.01em]">{title}</h1>
+        {subtitle && <p className="mt-1 text-[15px] leading-6 text-ink-muted">{subtitle}</p>}
       </div>
       {action}
     </div>
@@ -245,21 +382,26 @@ export function Modal({ open, onClose, title, children }: { open: boolean; onClo
   usePrenderFoco(caixa, open, onClose)
   if (!open) return null
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/50 sm:items-center" onClick={onClose}>
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-[rgb(14_23_51/0.5)] backdrop-blur-[3px] sm:items-center sm:p-4" onClick={onClose}>
       <div
         ref={caixa}
         role="dialog"
         aria-modal="true"
         aria-labelledby={tituloId}
         tabIndex={-1}
-        className="max-h-[92dvh] w-full max-w-lg overflow-y-auto overscroll-contain bg-surface-raised p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-lg outline-none"
+        className="max-h-[92dvh] w-full max-w-lg overflow-y-auto overscroll-contain rounded-t-sheet bg-surface-raised p-6 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-lg outline-none sm:rounded-sheet"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="mb-6 flex items-center justify-between border-b border-line pb-4">
-          <h2 id={tituloId} className="text-[22px] font-medium leading-[30px]">
+        <div className="mb-6 flex items-center justify-between gap-3 border-b border-line-soft pb-4">
+          <h2 id={tituloId} className="text-xl font-bold leading-7">
             {title}
           </h2>
-          <button type="button" onClick={onClose} className="-mr-2 flex h-11 w-11 items-center justify-center text-ink" aria-label="Fechar">
+          <button
+            type="button"
+            onClick={onClose}
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-pill bg-surface-sunken text-ink transition-colors hover:bg-line"
+            aria-label="Fechar"
+          >
             <X size={20} strokeWidth={1.5} aria-hidden="true" />
           </button>
         </div>
@@ -323,13 +465,17 @@ export function useConfirmacao() {
 }
 
 export function Empty({ children }: { children: ReactNode }) {
-  return <div className="border border-dashed border-line-strong p-8 text-center text-sm text-ink-muted">{children}</div>
+  return (
+    <div className="rounded-card border-[1.5px] border-dashed border-speckle bg-surface-field px-5 py-10 text-center text-sm leading-5 text-ink-muted">
+      {children}
+    </div>
+  )
 }
 
 export function Loading() {
   return (
     <div className="flex justify-center p-10" role="status" aria-label="Carregando">
-      <div className="h-8 w-8 animate-spin rounded-pill border-2 border-ink border-t-transparent" />
+      <div className="h-8 w-8 animate-spin rounded-pill border-[3px] border-line border-t-gold" />
     </div>
   )
 }
@@ -342,9 +488,9 @@ export function Alert({ tone = 'danger', title, children }: { tone?: 'success' |
     info: 'bg-info-bg text-info',
   }
   return (
-    <div className={clsx('flex gap-3 border border-current p-4', tons[tone])} role={tone === 'danger' ? 'alert' : 'status'}>
-      <div className="flex flex-col gap-0.5 text-sm leading-5 text-ink">
-        <span className="font-medium">{title}</span>
+    <div className={clsx('flex gap-3 rounded-field px-4 py-3', tons[tone])} role={tone === 'danger' ? 'alert' : 'status'}>
+      <div className="flex flex-col gap-0.5 text-sm leading-5">
+        <span className="font-semibold">{title}</span>
         {children}
       </div>
     </div>
@@ -357,21 +503,5 @@ export function ErrorBox({ error }: { error: unknown }) {
 }
 
 export function SearchInput(props: InputHTMLAttributes<HTMLInputElement>) {
-  return (
-    <div className="relative">
-      <svg
-        className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-ink-subtle"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="square"
-        aria-hidden="true"
-      >
-        <circle cx="11" cy="11" r="7" />
-        <path d="m20 20-4-4" />
-      </svg>
-      <Input className="pl-11" type="search" {...props} />
-    </div>
-  )
+  return <Input icon={Search} className="!rounded-pill" type="search" {...props} />
 }

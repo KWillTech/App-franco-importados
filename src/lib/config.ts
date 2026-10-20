@@ -15,7 +15,7 @@ function ler(): Tema {
 export function aplicarTema(tema = ler()) {
   const escuro = tema === 'escuro' || (tema === 'sistema' && window.matchMedia('(prefers-color-scheme: dark)').matches)
   document.documentElement.dataset.theme = escuro ? 'dark' : 'light'
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', escuro ? '#0b0b0b' : '#ffffff')
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', escuro ? '#090e1e' : '#ffffff')
 }
 
 export function useTema(): [Tema, (t: Tema) => void] {

@@ -22,10 +22,12 @@ export default function Vendas() {
   return (
     <>
       <PageHeader
+        eyebrow="Atacado e varejo"
         title="Vendas"
+        subtitle={`${vendas.data?.length ?? 0} registradas`}
         action={
           <Link to="/vendas/nova" className={buttonClass({ size: 'sm' })}>
-            <Plus size={16} strokeWidth={1.5} aria-hidden="true" />
+            <Plus size={16} strokeWidth={2} aria-hidden="true" className="text-gold dark:text-on-brand" />
             Nova venda
           </Link>
         }

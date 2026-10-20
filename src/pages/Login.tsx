@@ -1,3 +1,4 @@
+import { Lock, Mail } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useAuth } from '@/auth'
@@ -24,17 +25,21 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-dvh flex-col items-center justify-center bg-bg px-4 py-12">
-      <form onSubmit={entrar} className="flex w-full max-w-sm flex-col gap-6">
-        <div className="flex flex-col items-center gap-4 border-b border-line pb-8">
-          <Logo className="h-24" />
-          <p className="eyebrow">Gestão de clientes e recebimentos</p>
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-surface px-4 py-12">
+      <form onSubmit={entrar} className="flex w-full max-w-sm flex-col gap-5 rounded-sheet border border-line bg-surface-raised p-6 shadow-card sm:p-8">
+        <div className="flex flex-col items-center gap-3 border-b border-line-soft pb-6 text-center">
+          <Logo className="h-20" />
+          <span className="rounded-pill bg-[rgb(14_23_51)] px-3 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gold dark:bg-surface-sunken">
+            Gestão
+          </span>
+          <h1 className="mt-1 text-[22px] font-bold leading-7">Entrar no app</h1>
+          <p className="text-sm text-ink-muted">Clientes, vendas e recebimentos.</p>
         </div>
         <Field label="E-mail">
-          <Input type="email" name="email" autoComplete="email" inputMode="email" spellCheck={false} autoCapitalize="none" required value={email} onChange={(e) => setEmail(e.target.value)} />
+          <Input icon={Mail} type="email" name="email" autoComplete="email" inputMode="email" spellCheck={false} autoCapitalize="none" required value={email} onChange={(e) => setEmail(e.target.value)} />
         </Field>
         <Field label="Senha">
-          <Input type="password" name="password" autoComplete="current-password" required value={senha} onChange={(e) => setSenha(e.target.value)} />
+          <Input icon={Lock} type="password" name="password" autoComplete="current-password" required value={senha} onChange={(e) => setSenha(e.target.value)} />
         </Field>
         <ErrorBox error={erro} />
         <Button full disabled={enviando}>

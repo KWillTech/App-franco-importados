@@ -2,7 +2,7 @@ import clsx from 'clsx'
 import { Download } from 'lucide-react'
 import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { Button, Empty, ErrorBox, Loading, PageHeader } from '@/components/ui'
+import { Button, Empty, ErrorBox, Loading, PageHeader, Selo } from '@/components/ui'
 import { useVendas } from '@/lib/api'
 import { baixarCsv } from '@/lib/csv'
 import { FORMAS, ROTULO_STATUS, hoje, lucro, maioresDevedores, resumoMensal, saldoDevedor, statusParcela, statusVenda } from '@/lib/domain'
@@ -62,7 +62,7 @@ export default function Relatorios() {
 
   return (
     <>
-      <PageHeader title="Relatórios" subtitle="Últimos 12 meses" />
+      <PageHeader eyebrow="Resultados" title="Relatórios" subtitle="Últimos 12 meses" />
       <ErrorBox error={vendas.error} />
       {vendas.isLoading ? (
         <Loading />
@@ -70,17 +70,17 @@ export default function Relatorios() {
         <div className="flex flex-col gap-8">
           <section>
             <h2 className="eyebrow mb-3">Por mês</h2>
-            <div className="overflow-x-auto border border-line bg-surface-raised">
+            <div className="overflow-x-auto rounded-card border border-line bg-surface-raised shadow-card">
               <table className="tabular w-full text-[13px] leading-5">
                 <thead>
-                  <tr className="border-b border-line text-left text-xs text-ink-muted">
+                  <tr className="border-b border-line-soft bg-surface-sunken/60 text-left text-xs font-semibold text-ink-muted">
                     <th scope="col" className="py-3 pl-3 pr-2 font-normal">Mês</th>
                     <th scope="col" className="px-2 py-3 text-right font-normal">Vendido</th>
                     <th scope="col" className="px-2 py-3 text-right font-normal">Recebido</th>
                     <th scope="col" className="py-3 pl-2 pr-3 text-right font-normal">Lucro</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-line">
+                <tbody className="divide-y divide-line-soft">
                   {meses.map((m) => (
                     <tr key={m.mes}>
                       <th scope="row" className="whitespace-nowrap py-3 pl-3 pr-2 text-left font-normal">
@@ -103,13 +103,14 @@ export default function Relatorios() {
             {devedores.length === 0 ? (
               <Empty>Nenhum cliente com saldo em aberto.</Empty>
             ) : (
-              <ol className="divide-y divide-line border border-line bg-surface-raised">
-                {devedores.map((d) => (
+              <ol className="lista">
+                {devedores.map((d, i) => (
                   <li key={d.cliente.id}>
-                    <Link to={`/clientes/${d.cliente.id}`} className="flex min-h-14 items-center gap-3 px-4 py-3 hover:bg-surface">
-                      <span className="min-w-0 flex-1 truncate font-medium">{d.cliente.nome}</span>
+                    <Link to={`/clientes/${d.cliente.id}`} className="flex min-h-14 items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-sunken/60">
+                      <Selo size="sm">{String(i + 1).padStart(2, '0')}</Selo>
+                      <span className="min-w-0 flex-1 truncate font-semibold">{d.cliente.nome}</span>
                       <span className="tabular text-right text-sm">
-                        <span className="block">{brl(d.saldo)}</span>
+                        <span className="block font-semibold">{brl(d.saldo)}</span>
                         {d.atrasado > 0 && <span className="block text-danger">{brl(d.atrasado)} em atraso</span>}
                       </span>
                     </Link>

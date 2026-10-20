@@ -1,5 +1,5 @@
 import clsx from 'clsx'
-import { Bell, CalendarClock, FileBarChart, LayoutGrid, LogOut, Menu, Receipt, Search, Settings, ShoppingBag, Users, X } from 'lucide-react'
+import { Bell, CalendarClock, ChevronRight, FileBarChart, LayoutGrid, LogOut, Menu, Plus, Receipt, Search, Settings, ShoppingBag, Users, X } from 'lucide-react'
 import { Suspense, useMemo, useRef, useState } from 'react'
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom'
 import { useAuth } from '@/auth'
@@ -8,7 +8,7 @@ import { hoje, statusParcela } from '@/lib/domain'
 import { supabase } from '@/lib/supabase'
 import { ErroDeRota } from './ErroDeRota'
 import { Logo } from './Logo'
-import { Loading, usePrenderFoco } from './ui'
+import { Avatar, Loading, buttonClass, usePrenderFoco } from './ui'
 
 const itens = [
   { to: '/', label: 'Painel', icon: LayoutGrid },
@@ -34,7 +34,7 @@ export function useAlertas() {
   }, [data])
 }
 
-const icone = 'flex h-11 w-11 items-center justify-center text-ink'
+const icone = 'flex h-11 w-11 items-center justify-center rounded-pill bg-surface-sunken text-ink transition-colors hover:bg-line'
 
 export function Layout() {
   const [aberto, setAberto] = useState(false)
@@ -46,31 +46,34 @@ export function Layout() {
 
   return (
     <div className="min-h-dvh bg-surface">
-      <header className="sticky top-0 z-30 border-b border-line bg-bg pt-[env(safe-area-inset-top)] shadow-sm">
-        <div className="mx-auto grid h-14 max-w-3xl grid-cols-[1fr_auto_1fr] items-center px-2">
+      <header className="sticky top-0 z-30 border-b border-line-soft bg-bg/90 pt-[env(safe-area-inset-top)] shadow-sm backdrop-blur-md backdrop-saturate-150">
+        <div className="mx-auto grid h-16 max-w-3xl grid-cols-[1fr_auto_1fr] items-center px-3">
           <button onClick={() => setAberto(true)} aria-label="Abrir menu" aria-expanded={aberto} aria-controls="menu-principal" className={icone}>
-            <Menu size={22} strokeWidth={1.5} aria-hidden="true" />
+            <Menu size={20} strokeWidth={1.8} aria-hidden="true" />
           </button>
-          <Link to="/" aria-label="Início">
-            <Logo className="h-9" />
+          <Link to="/" aria-label="Início" className="flex items-center gap-2.5">
+            <Logo className="h-10" />
+            <span className="hidden rounded-pill bg-[rgb(14_23_51)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] text-gold min-[380px]:inline dark:bg-surface-sunken">
+              Gestão
+            </span>
           </Link>
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
             <Link to="/agenda" className={clsx(icone, 'relative')} aria-label={`Cobranças pendentes: ${alertas}`}>
-              <Bell size={20} strokeWidth={1.5} aria-hidden="true" />
+              <Bell size={19} strokeWidth={1.7} aria-hidden="true" />
               {alertas > 0 && (
-                <span className="tabular absolute right-0.5 top-1 h-[18px] min-w-[18px] rounded-pill bg-brand px-[5px] text-center text-[11px] font-medium leading-[18px] text-on-brand">
+                <span className="tabular absolute -right-1 -top-1 h-[20px] min-w-[20px] rounded-pill bg-gold px-[5px] text-center text-[11px] font-bold leading-[20px] text-[rgb(14_23_51)] ring-2 ring-bg">
                   {alertas > 99 ? '99+' : alertas}
                 </span>
               )}
             </Link>
             <Link to="/configuracoes" className={icone} aria-label="Configurações">
-              <Settings size={20} strokeWidth={1.5} aria-hidden="true" />
+              <Settings size={19} strokeWidth={1.7} aria-hidden="true" />
             </Link>
           </div>
         </div>
       </header>
 
-      {aberto && <div className="fixed inset-0 z-40 bg-black/60" onClick={() => setAberto(false)} aria-hidden="true" />}
+      {aberto && <div className="fixed inset-0 z-40 bg-[rgb(14_23_51/0.5)] backdrop-blur-[3px]" onClick={() => setAberto(false)} aria-hidden="true" />}
       {/* visibility entra na transição: ao fechar, a gaveta desliza e só depois some (sai do Tab). */}
       <aside
         ref={gaveta}
@@ -80,17 +83,18 @@ export function Layout() {
         aria-label="Menu"
         tabIndex={-1}
         className={clsx(
-          'fixed inset-y-0 left-0 z-50 flex w-72 flex-col overflow-y-auto overscroll-contain bg-surface-inverse pt-[env(safe-area-inset-top)] text-ink-inverse shadow-lg outline-none transition-[transform,visibility] duration-200 motion-reduce:transition-none',
+          'fixed inset-y-0 left-0 z-50 flex w-[min(86vw,340px)] flex-col overflow-y-auto overscroll-contain rounded-r-sheet bg-surface-raised pt-[env(safe-area-inset-top)] text-ink shadow-lg outline-none transition-[transform,visibility] duration-200 motion-reduce:transition-none',
           aberto ? 'visible translate-x-0' : 'invisible -translate-x-full',
         )}
       >
-        <div className="flex items-center justify-between px-4 py-4">
-          <Logo inverse className="h-12" />
-          <button onClick={() => setAberto(false)} aria-label="Fechar menu" className="flex h-11 w-11 items-center justify-center">
-            <X size={20} strokeWidth={1.5} aria-hidden="true" />
+        <div className="sticky top-0 z-[1] flex items-center justify-between border-b border-line-soft bg-surface-raised/95 py-3.5 pl-5 pr-4">
+          <Logo className="h-11" />
+          <button onClick={() => setAberto(false)} aria-label="Fechar menu" className={icone}>
+            <X size={20} strokeWidth={1.7} aria-hidden="true" />
           </button>
         </div>
-        <nav aria-label="Seções" className="flex-1 border-t border-ink-inverse/20 px-2 pt-2">
+        <p className="eyebrow px-[22px] pb-2 pt-[18px]">Menu</p>
+        <nav aria-label="Seções" className="flex flex-1 flex-col gap-0.5 px-2.5 pb-4">
           {itens.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
@@ -99,24 +103,45 @@ export function Layout() {
               onClick={() => setAberto(false)}
               className={({ isActive }) =>
                 clsx(
-                  'label flex items-center gap-3 px-3 py-3.5',
-                  isActive ? 'bg-bg text-ink' : 'opacity-80 hover:opacity-100',
+                  'group flex min-h-12 items-center gap-3 rounded-field px-3 text-[15px] font-semibold transition-colors',
+                  isActive ? 'bg-brand text-on-brand shadow-elevada' : 'text-ink hover:bg-surface-sunken',
                 )
               }
             >
-              <Icon size={18} strokeWidth={1.5} aria-hidden="true" />
-              {label}
+              {({ isActive }) => (
+                <>
+                  <Icon size={19} strokeWidth={1.7} aria-hidden="true" className={isActive ? 'text-gold dark:text-on-brand' : 'text-ink-subtle'} />
+                  <span className="flex-1">{label}</span>
+                  <ChevronRight
+                    size={14}
+                    strokeWidth={2}
+                    aria-hidden="true"
+                    className={clsx('h-[26px] w-[26px] rounded-pill p-1.5', isActive ? 'bg-white/10' : 'bg-surface-sunken text-ink-subtle')}
+                  />
+                </>
+              )}
             </NavLink>
           ))}
         </nav>
-        <div className="border-t border-ink-inverse/20 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
-          <div className="px-3 py-2">
-            <div className="eyebrow text-current opacity-70">Administrador</div>
-            <div className="truncate text-sm">{session?.user.email}</div>
+        <div className="flex flex-col gap-3 border-t border-line-soft p-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <Link to="/vendas/nova" onClick={() => setAberto(false)} className={buttonClass({ full: true })}>
+            <Plus size={18} strokeWidth={2} aria-hidden="true" className="text-gold dark:text-on-brand" />
+            Nova venda
+          </Link>
+          <div className="flex items-center gap-3 rounded-field bg-surface-sunken p-3">
+            <Avatar nome={session?.user.email ?? 'A'} size="sm" />
+            <div className="min-w-0 flex-1">
+              <div className="eyebrow">Administrador</div>
+              <div className="truncate text-sm">{session?.user.email}</div>
+            </div>
+            <button
+              onClick={() => supabase.auth.signOut()}
+              aria-label="Sair"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-pill border border-line-strong bg-surface-raised text-ink transition-colors hover:border-danger hover:text-danger"
+            >
+              <LogOut size={17} strokeWidth={1.8} aria-hidden="true" />
+            </button>
           </div>
-          <button onClick={() => supabase.auth.signOut()} className="label flex w-full items-center gap-3 px-3 py-3 opacity-80 hover:opacity-100">
-            <LogOut size={18} strokeWidth={1.5} aria-hidden="true" /> Sair
-          </button>
         </div>
       </aside>
 
