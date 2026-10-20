@@ -60,11 +60,14 @@ export function Chips<T extends string>({
   value,
   onChange,
   options,
+  grade,
 }: {
   label: string
   value: T
   onChange: (v: T) => void
   options: [T, string][]
+  /** Quebra as opções em linhas de 3, sem rolagem lateral (para listas longas, como os períodos). */
+  grade?: boolean
 }) {
   // Grupo de rádio: Tab entra no item marcado; setas trocam a opção (padrão WAI-ARIA).
   function teclas(e: ReactKeyboardEvent<HTMLDivElement>) {
@@ -82,7 +85,10 @@ export function Chips<T extends string>({
       role="radiogroup"
       aria-label={label}
       onKeyDown={teclas}
-      className="flex max-w-full gap-1 overflow-x-auto rounded-pill bg-surface-sunken p-[5px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      className={clsx(
+        'max-w-full gap-1 bg-surface-sunken p-[5px]',
+        grade ? 'grid grid-cols-3 rounded-[24px]' : 'flex overflow-x-auto rounded-pill [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
+      )}
     >
       {options.map(([v, rotulo]) => (
         <button
@@ -93,7 +99,8 @@ export function Chips<T extends string>({
           tabIndex={value === v ? 0 : -1}
           onClick={() => onChange(v)}
           className={clsx(
-            'h-10 flex-1 shrink-0 whitespace-nowrap rounded-pill px-4 text-[13px] font-semibold transition-colors duration-150',
+            'h-10 whitespace-nowrap rounded-pill text-[13px] font-semibold transition-colors duration-150',
+            grade ? 'min-w-0 px-1' : 'flex-1 shrink-0 px-4',
             value === v ? 'bg-brand text-on-brand shadow-elevada' : 'text-ink-muted hover:bg-surface-raised hover:text-ink',
           )}
         >
