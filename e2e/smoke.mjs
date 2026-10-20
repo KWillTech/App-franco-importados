@@ -164,6 +164,49 @@ for (const tema of ['light', 'dark']) {
   if (!(await abrirMenu.evaluate((b) => b === document.activeElement))) falhas.push(`[${tema}] foco não voltou para "Abrir menu"`)
   await context.close()
 }
+
+// Primeiro acesso: usuário criado pelo administrador cai na troca de senha e só depois entra no app.
+{
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, locale: 'pt-BR' })
+  const page = await context.newPage()
+  page.on('pageerror', (e) => falhas.push(`[primeiro acesso] erro de JS: ${e.message}`))
+  await fakeSupabase(page)
+  let marcado = true
+  const novo = () => ({ ...user, email: 'equipe@francoimportados.com', app_metadata: { provider: 'email', ...(marcado ? { trocar_senha: true } : {}) } })
+  await page.route('**/auth/v1/token**', (r) =>
+    r.fulfill({ json: { access_token: 'fake', token_type: 'bearer', expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600, refresh_token: 'r', user: novo() } }),
+  )
+  await page.route('**/auth/v1/user**', (r) => {
+    if (r.request().method() === 'PUT') marcado = false
+    return r.fulfill({ json: novo() })
+  })
+  await page.goto(`${BASE}/login`)
+  await page.getByLabel('E-mail').fill('equipe@francoimportados.com')
+  await page.getByLabel('Senha').fill('provisoria')
+  await page.getByRole('button', { name: 'Entrar' }).click()
+  await page.waitForURL(`${BASE}/trocar-senha`)
+  await page.goto(`${BASE}/clientes`)
+  try {
+    await page.waitForURL(`${BASE}/trocar-senha`, { timeout: 5000 })
+  } catch {
+    falhas.push('[primeiro acesso] abriu outra tela antes de trocar a senha')
+  }
+  await page.getByRole('button', { name: 'Salvar senha e entrar' }).waitFor()
+  await page.screenshot({ path: `${OUT}/primeiro-acesso.png` })
+  await page.locator('input[name="new-password"]').fill('franco2026')
+  await page.getByLabel('Repita a senha nova').fill('franco2025')
+  await page.getByRole('button', { name: 'Salvar senha e entrar' }).click()
+  if (!(await page.getByText('As senhas não são iguais.').isVisible())) falhas.push('[primeiro acesso] aceitou senhas diferentes')
+  await page.getByLabel('Repita a senha nova').fill('franco2026')
+  await page.getByRole('button', { name: 'Salvar senha e entrar' }).click()
+  try {
+    await page.waitForURL(`${BASE}/`, { timeout: 5000 })
+  } catch {
+    falhas.push('[primeiro acesso] não entrou no app depois de trocar a senha')
+  }
+  await context.close()
+}
+
 await browser.close()
 
 if (falhas.length) {

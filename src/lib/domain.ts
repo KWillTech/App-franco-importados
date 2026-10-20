@@ -327,3 +327,19 @@ export const saldoPorCliente = (vendas: VendaCompleta[], ref = hoje()) =>
 
 export const clientesComAtraso = (vendas: VendaCompleta[], ref = hoje()) =>
   new Set(maioresDevedores(vendas, Infinity, ref).filter((d) => d.atrasado > 0).map((d) => d.cliente.id))
+
+/** Tamanho mínimo da senha nova (o Supabase aceita 6; pedimos um pouco mais). */
+export const SENHA_MINIMA = 8
+
+/** Senha nova do primeiro acesso: tamanho mínimo e confirmação igual. */
+export function validarNovaSenha(senha: string, confirmacao: string): { senha?: string; confirmacao?: string } {
+  const erros: { senha?: string; confirmacao?: string } = {}
+  if (senha.length < SENHA_MINIMA) erros.senha = `Use pelo menos ${SENHA_MINIMA} caracteres.`
+  else if (!senha.trim()) erros.senha = 'A senha não pode ter só espaços.'
+  if (!confirmacao) erros.confirmacao = 'Repita a senha.'
+  else if (confirmacao !== senha) erros.confirmacao = 'As senhas não são iguais.'
+  return erros
+}
+
+/** Usuário criado pelo administrador precisa trocar a senha antes de usar o app (marca feita no banco). */
+export const precisaTrocarSenha = (appMetadata: Record<string, unknown> | undefined) => appMetadata?.trocar_senha === true

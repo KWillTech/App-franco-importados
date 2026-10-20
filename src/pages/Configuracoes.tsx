@@ -45,7 +45,7 @@ export default function Configuracoes() {
             <div className="flex items-center gap-3 rounded-field bg-surface-sunken p-3">
               <Avatar nome={session?.user.email ?? 'A'} />
               <div className="min-w-0">
-                <div className="eyebrow">Administrador</div>
+                <div className="eyebrow">Conectado</div>
                 <div className="truncate text-sm">{session?.user.email}</div>
               </div>
             </div>

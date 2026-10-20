@@ -6,12 +6,32 @@ Visual do design system Franco Importados.
 ## Primeira configuração (uma vez)
 
 1. No [Supabase](https://supabase.com/dashboard), abra o projeto, vá em **SQL Editor → New query**, cole o conteúdo de
-   `supabase/migrations/001_schema.sql` e clique em **Run**. Este arquivo roda **uma única vez**; mudanças futuras no banco vão em novos arquivos numerados
+   `supabase/migrations/001_schema.sql` e clique em **Run**; depois faça o mesmo com o `002_*.sql`. Cada arquivo roda **uma única vez**; mudanças futuras no banco vão em novos arquivos numerados
    (`002_*.sql`, `003_*.sql`…), nunca editando o `001`.
 2. Em **Authentication → Users → Add user**, crie o usuário administrador (e-mail e senha).
 3. Em **Authentication → Sign In / Providers**, desative **Allow new users to sign up**.
 4. Copie `.env.example` para `.env.local` e preencha `VITE_SUPABASE_URL` e `VITE_SUPABASE_ANON_KEY`
    (Supabase → Project Settings → API).
+
+## Equipe: novos usuários
+
+Todos os usuários do app veem e editam os mesmos clientes, vendas e parcelas.
+
+1. Uma única vez: no **SQL Editor**, rode `supabase/migrations/002_equipe_e_troca_de_senha.sql`
+   (antes de criar o primeiro usuário novo).
+2. Em **Authentication → Users → Add user → Create new user**, informe o e-mail e uma senha provisória e
+   marque **Auto Confirm User**.
+3. Passe o e-mail e a senha provisória para a pessoa. No primeiro login o app pede uma senha nova e só libera as
+   telas depois da troca.
+
+Para obrigar alguém a trocar a senha de novo, rode no SQL Editor (trocando o e-mail):
+
+```sql
+update auth.users set raw_app_meta_data = raw_app_meta_data || '{"trocar_senha": true}'
+where email = 'pessoa@exemplo.com';
+```
+
+Excluir um usuário não apaga o que ele cadastrou.
 
 ## Comandos
 

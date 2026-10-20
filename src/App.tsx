@@ -4,6 +4,7 @@ import { RequireAuth } from './auth'
 import { Layout } from './components/Layout'
 import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
+import TrocarSenha from './pages/TrocarSenha'
 
 // Login e Painel vêm no pacote principal; as demais telas carregam sob demanda (Suspense no Layout).
 const Agenda = lazy(() => import('./pages/Agenda'))
@@ -21,6 +22,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/trocar-senha" element={<TrocarSenha />} />
       <Route
         element={
           <RequireAuth>
