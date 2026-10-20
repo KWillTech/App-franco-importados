@@ -1,7 +1,7 @@
 import { Lock, Mail } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
-import { useAuth } from '@/auth'
+import { deveTrocarSenha, useAuth } from '@/auth'
 import { Logo } from '@/components/Logo'
 import { Button, ErrorBox, Field, Input } from '@/components/ui'
 import { supabase } from '@/lib/supabase'
@@ -13,7 +13,7 @@ export default function Login() {
   const [erro, setErro] = useState<string | null>(null)
   const [enviando, setEnviando] = useState(false)
 
-  if (session) return <Navigate to="/" replace />
+  if (session) return <Navigate to={deveTrocarSenha(session) ? '/trocar-senha' : '/'} replace />
 
   async function entrar(e: FormEvent) {
     e.preventDefault()

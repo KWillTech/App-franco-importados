@@ -13,6 +13,8 @@ import {
   statusParcela,
   statusVenda,
   validarVenda,
+  precisaTrocarSenha,
+  validarNovaSenha,
   type Cliente,
   type Parcela,
   type VendaCompleta,
@@ -290,5 +292,26 @@ describe('devedores', () => {
   it('expõe saldo por cliente e quem está em atraso', () => {
     expect(saldoPorCliente(vendas, '2026-10-12').get('c2')).toBe(300)
     expect([...clientesComAtraso(vendas, '2026-10-12')]).toEqual(['c1'])
+  })
+})
+
+describe('validarNovaSenha', () => {
+  it('aceita senha com 8+ caracteres repetida igual', () => {
+    expect(validarNovaSenha('franco2026', 'franco2026')).toEqual({})
+  })
+  it('recusa senha curta, só de espaços ou confirmação diferente/vazia', () => {
+    expect(validarNovaSenha('abc', 'abc').senha).toBe('Use pelo menos 8 caracteres.')
+    expect(validarNovaSenha('        ', '        ').senha).toBe('A senha não pode ter só espaços.')
+    expect(validarNovaSenha('franco2026', 'franco2025').confirmacao).toBe('As senhas não são iguais.')
+    expect(validarNovaSenha('franco2026', '').confirmacao).toBe('Repita a senha.')
+  })
+})
+
+describe('precisaTrocarSenha', () => {
+  it('só quando o banco marcou trocar_senha = true', () => {
+    expect(precisaTrocarSenha({ provider: 'email', trocar_senha: true })).toBe(true)
+    expect(precisaTrocarSenha({ provider: 'email' })).toBe(false)
+    expect(precisaTrocarSenha({ trocar_senha: 'true' })).toBe(false)
+    expect(precisaTrocarSenha(undefined)).toBe(false)
   })
 })
