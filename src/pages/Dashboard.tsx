@@ -28,7 +28,7 @@ export default function Dashboard() {
     <>
       <PageHeader eyebrow="Atacado e varejo" title="Painel" subtitle="Visão geral das vendas e recebimentos." />
       <div className="mb-6">
-        <Chips label="Período" value={chave} onChange={setChave} options={Object.entries(PERIODOS) as [ChavePeriodo, string][]} />
+        <Chips grade label="Período" value={chave} onChange={setChave} options={Object.entries(PERIODOS) as [ChavePeriodo, string][]} />
       </div>
       <ErrorBox error={error} />
       {isLoading ? (
