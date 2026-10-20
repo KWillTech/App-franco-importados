@@ -2,7 +2,7 @@ import { ChevronRight, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ClienteForm } from '@/components/ClienteForm'
-import { Button, Empty, ErrorBox, Loading, PageHeader, SearchInput, StatusBadge } from '@/components/ui'
+import { Avatar, Button, Empty, ErrorBox, Loading, PageHeader, SearchInput, StatusBadge } from '@/components/ui'
 import { useClientes, useVendas } from '@/lib/api'
 import { clientesComAtraso, saldoPorCliente } from '@/lib/domain'
 import { brl, combina } from '@/lib/format'
@@ -21,10 +21,11 @@ export default function Clientes() {
     <>
       <PageHeader
         title="Clientes"
+        eyebrow="Cadastro"
         subtitle={`${clientes.data?.length ?? 0} cadastrados`}
         action={
           <Button size="sm" onClick={() => setNovo(true)}>
-            <Plus size={16} strokeWidth={1.5} aria-hidden="true" />
+            <Plus size={16} strokeWidth={2} aria-hidden="true" className="text-gold dark:text-on-brand" />
             Novo
           </Button>
         }
@@ -38,18 +39,19 @@ export default function Clientes() {
       ) : lista.length === 0 ? (
         <Empty>{busca ? 'Nenhum cliente encontrado.' : 'Nenhum cliente ainda. Toque em Novo para cadastrar.'}</Empty>
       ) : (
-        <ul className="divide-y divide-line border border-line bg-surface-raised">
+        <ul className="lista">
           {lista.map((c) => {
             const saldo = saldos.get(c.id) ?? 0
             return (
               <li key={c.id}>
-                <Link to={`/clientes/${c.id}`} className="flex min-h-16 items-center gap-3 px-4 py-3 hover:bg-surface">
+                <Link to={`/clientes/${c.id}`} className="flex min-h-[72px] items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-sunken/60">
+                  <Avatar nome={c.nome} />
                   <div className="min-w-0 flex-1">
-                    <div className="truncate font-medium">{c.nome}</div>
+                    <div className="truncate font-semibold">{c.nome}</div>
                     <div className="tabular truncate text-sm text-ink-muted">{c.telefone || 'Sem telefone'}{saldo > 0 && ` · ${brl(saldo)} em aberto`}</div>
                   </div>
                   {atrasados.has(c.id) && <StatusBadge status="atrasada" />}
-                  <ChevronRight size={18} strokeWidth={1.5} className="shrink-0 text-ink-subtle" aria-hidden="true" />
+                  <ChevronRight size={14} strokeWidth={2} className="h-[26px] w-[26px] shrink-0 rounded-pill bg-surface-sunken p-1.5 text-ink-subtle" aria-hidden="true" />
                 </Link>
               </li>
             )

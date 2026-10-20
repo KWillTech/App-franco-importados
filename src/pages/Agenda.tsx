@@ -20,7 +20,7 @@ export default function Agenda() {
 
   return (
     <>
-      <PageHeader title="Agenda de cobranças" subtitle={dataExtenso(hoje())} />
+      <PageHeader eyebrow="Contas a receber" title="Agenda de cobranças" subtitle={dataExtenso(hoje())} />
       <ErrorBox error={vendas.error} />
       {vendas.isLoading ? (
         <Loading />
@@ -29,13 +29,14 @@ export default function Agenda() {
       ) : (
         comItens.map(([titulo, itens]) => (
           <section key={titulo} className="mb-8">
-            <div className="mb-3 flex items-baseline justify-between gap-3">
-              <h2 className="eyebrow">
-                {titulo} · {itens.length}
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <h2 className="flex items-center gap-2 text-base font-bold">
+                {titulo}
+                <span className="tabular rounded-pill bg-surface-sunken px-2.5 py-0.5 text-xs font-bold text-ink-muted">{itens.length}</span>
               </h2>
-              <span className="tabular text-sm text-ink-muted">{brl(round2(itens.reduce((s, i) => s + restante(i.parcela), 0)))}</span>
+              <span className="tabular text-sm font-semibold text-ink-muted">{brl(round2(itens.reduce((s, i) => s + restante(i.parcela), 0)))}</span>
             </div>
-            <ul className="divide-y divide-line border border-line bg-surface-raised">
+            <ul className="lista">
               {itens.map((i) => (
                 <ParcelaItem key={i.parcela.id} {...i} onPagar={() => setPagando(i)} />
               ))}

@@ -1,10 +1,10 @@
 import clsx from 'clsx'
 import { addMonths, format } from 'date-fns'
-import { Plus } from 'lucide-react'
+import { Hash, Package, Plus, Wallet, X } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ClienteForm } from '@/components/ClienteForm'
-import { Alert, Button, Empty, ErrorBox, Field, Info, Input, Loading, PageHeader, Select, Textarea, useConfirmacao } from '@/components/ui'
+import { Alert, Button, Empty, ErrorBox, Field, Input, Loading, PageHeader, Secao, Select, Textarea, useConfirmacao } from '@/components/ui'
 import { useClientes, useSalvarVenda, useVendas } from '@/lib/api'
 import {
   FORMAS,
@@ -116,9 +116,14 @@ function Formulario({ venda, clientes, clienteInicial }: { venda?: VendaCompleta
 
   return (
     <>
-      <PageHeader eyebrow={venda ? 'Editar venda' : 'Nova venda'} title={venda ? venda.produto : 'Registrar venda'} />
-      <form onSubmit={enviar} className="flex flex-col gap-6" noValidate>
-        <section className="flex flex-col gap-4">
+      <PageHeader
+        eyebrow={venda ? 'Editar venda' : 'Nova venda'}
+        title={venda ? venda.produto : 'Registrar venda'}
+        subtitle="As parcelas são calculadas sozinhas a partir dos valores."
+      />
+      <form onSubmit={enviar} className="flex flex-col gap-5 pb-4" noValidate>
+        <Secao passo="01" titulo="Cliente e produto" descricao="Quem comprou, o quê e como vai pagar.">
+        <div className="flex flex-col gap-4">
           <div className="flex items-end gap-2">
             <div className="min-w-0 flex-1">
               <Field label="Cliente">
@@ -137,7 +142,7 @@ function Formulario({ venda, clientes, clienteInicial }: { venda?: VendaCompleta
             </Button>
           </div>
           <Field label="Produto">
-            <Input value={produto} onChange={(e) => setProduto(e.target.value)} placeholder="Ex.: iPhone 16 branco" autoComplete="off" />
+            <Input icon={Package} value={produto} onChange={(e) => setProduto(e.target.value)} placeholder="Ex.: iPhone 16 branco" autoComplete="off" />
           </Field>
           <div className="grid grid-cols-2 gap-4">
             <Field label="Data da venda" error={tentou && erroData ? erroData : undefined}>
@@ -153,11 +158,13 @@ function Formulario({ venda, clientes, clienteInicial }: { venda?: VendaCompleta
               </Select>
             </Field>
           </div>
-        </section>
+        </div>
+        </Secao>
 
-        <section className="grid grid-cols-2 gap-4">
+        <Secao passo="02" titulo="Valores e parcelas" descricao="Quanto custou, por quanto vendeu e em quantas vezes.">
+        <div className="grid grid-cols-2 gap-4">
           <Field label="Valor da venda">
-            <Input inputMode="decimal" value={valorVenda} onChange={(e) => setValorVenda(e.target.value)} placeholder="0,00" autoComplete="off" />
+            <Input icon={Wallet} inputMode="decimal" value={valorVenda} onChange={(e) => setValorVenda(e.target.value)} placeholder="0,00" autoComplete="off" />
           </Field>
           <Field label="Capital próprio" hint="Quanto o produto custou">
             <Input inputMode="decimal" value={capital} onChange={(e) => setCapital(e.target.value)} placeholder="0,00" autoComplete="off" />
@@ -166,50 +173,69 @@ function Formulario({ venda, clientes, clienteInicial }: { venda?: VendaCompleta
             <Input inputMode="decimal" value={entrada} onChange={(e) => setEntrada(e.target.value)} placeholder="0,00" autoComplete="off" />
           </Field>
           <Field label="Nº de parcelas" hint="0 = à vista">
-            <Input type="number" inputMode="numeric" min={0} max={120} value={numParcelas} onChange={(e) => setNumParcelas(e.target.value)} />
+            <Input icon={Hash} type="number" inputMode="numeric" min={0} max={120} value={numParcelas} onChange={(e) => setNumParcelas(e.target.value)} />
           </Field>
           {dados.numParcelas > 0 && (
             <Field label="1º vencimento">
               <Input type="date" value={primeiroVencimento} onChange={(e) => setPrimeiroVencimento(e.target.value)} />
             </Field>
           )}
-          <div className="flex items-end pb-3">
-            <Info label="Lucro" className={clsx('font-medium', lucro >= 0 ? 'text-success' : 'text-danger')}>
-              {brl(lucro)}
-            </Info>
+          <div className={clsx('flex flex-col justify-center rounded-field px-4 py-2', dados.numParcelas > 0 ? 'self-end' : 'col-span-2', lucro >= 0 ? 'bg-success-bg text-success' : 'bg-danger-bg text-danger')}>
+            <span className="text-xs font-medium">Lucro</span>
+            <span className="tabular text-lg font-bold leading-7">{brl(lucro)}</span>
           </div>
-        </section>
-
-        <Field label="Observação">
-          <Textarea value={observacao} onChange={(e) => setObservacao(e.target.value)} />
-        </Field>
-
+        </div>
         {previa.length > 0 && (
-          <section>
-            <p className="eyebrow mb-3">Parcelas</p>
-            <ul className="tabular divide-y divide-line border border-line bg-surface-raised text-sm">
+          <div className="mt-5 rounded-field bg-[repeating-linear-gradient(45deg,rgb(var(--surface-field)),rgb(var(--surface-field))_10px,rgb(var(--surface-sunken))_10px,rgb(var(--surface-sunken))_20px)] p-4">
+            <span className="mb-2.5 block text-[10.5px] font-bold uppercase tracking-eyebrow text-ink-subtle">Prévia das parcelas</span>
+            <ul className="lista tabular text-sm">
               {previa.map((p) => (
-                <li key={p.numero} className="flex justify-between gap-3 px-4 py-2">
+                <li key={p.numero} className="flex justify-between gap-3 px-4 py-2.5">
                   <span>
-                    {p.numero}ª · {dataBR(p.vencimento)}
+                    <span className="font-semibold">{p.numero}ª</span> · {dataBR(p.vencimento)}
                   </span>
-                  <span>
+                  <span className="font-semibold">
                     {brl(p.valor)}
-                    {p.comPagamento && ' · com pagamento'}
+                    {p.comPagamento && <span className="font-normal text-ink-muted"> · com pagamento</span>}
                   </span>
                 </li>
               ))}
             </ul>
-          </section>
+          </div>
         )}
+        </Secao>
+
+        <Secao passo="03" titulo="Observação" descricao="Opcional. Só aparece para você.">
+          <Field label="Observação">
+            <Textarea value={observacao} onChange={(e) => setObservacao(e.target.value)} />
+          </Field>
+        </Secao>
 
         {tentou && problema && <Alert title="Confira os dados">{problema}</Alert>}
         <ErrorBox error={salvar.error} />
-        <div className="flex gap-3">
-          <Button type="button" variant="secondary" onClick={() => navigate(-1)}>
-            Cancelar
-          </Button>
-          <Button className="flex-1" disabled={salvar.isPending}>
+        <div className="sticky bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex items-center gap-2 rounded-[18px] bg-[rgb(14_23_51/0.96)] p-2.5 pl-4 text-white shadow-[0_12px_30px_rgb(14_23_51/0.28)] backdrop-blur-sm sm:rounded-pill">
+          <span className="min-w-0 flex-1" role="status">
+            {tentou && problema ? (
+              <span className="text-sm font-medium text-[rgb(255_180_171)]">Confira os dados</span>
+            ) : (
+              <span className="flex items-center gap-2.5">
+                <i className="h-2 w-2 shrink-0 rounded-pill bg-gold shadow-[0_0_0_4px_rgb(216_178_106/0.2)]" />
+                <span className="min-w-0 leading-4">
+                  <span className="block text-[11px] text-[rgb(207_213_226)]">Lucro</span>
+                  <span className="tabular block truncate text-sm font-semibold">{brl(lucro)}</span>
+                </span>
+              </span>
+            )}
+          </span>
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            aria-label="Cancelar"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-pill text-white transition-colors hover:bg-white/10"
+          >
+            <X size={18} strokeWidth={2} aria-hidden="true" />
+          </button>
+          <Button variant="gold" size="sm" disabled={salvar.isPending}>
             {salvar.isPending ? 'Salvando…' : 'Salvar venda'}
           </Button>
         </div>

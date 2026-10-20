@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { useSalvarCliente } from '@/lib/api'
 import type { Cliente } from '@/lib/domain'
+import { IdCard, MapPin, Phone, User } from 'lucide-react'
 import { Button, ErrorBox, Field, Input, Modal, Textarea } from './ui'
 
 const vazio = (s: string) => s.trim() || null
@@ -38,6 +39,7 @@ export function ClienteForm({ cliente, onClose, onSaved }: { cliente?: Cliente |
       <form onSubmit={enviar} className="flex flex-col gap-4" noValidate>
         <Field label="Nome" error={erroNome}>
           <Input
+            icon={User}
             value={nome}
             onChange={(e) => {
               setNome(e.target.value)
@@ -48,13 +50,13 @@ export function ClienteForm({ cliente, onClose, onSaved }: { cliente?: Cliente |
           />
         </Field>
         <Field label="Telefone / WhatsApp" hint="Com DDD, ex.: (19) 98287-2749">
-          <Input value={telefone} onChange={(e) => setTelefone(e.target.value)} inputMode="tel" autoComplete="off" />
+          <Input icon={Phone} value={telefone} onChange={(e) => setTelefone(e.target.value)} inputMode="tel" autoComplete="off" />
         </Field>
         <Field label="CPF">
-          <Input value={cpf} onChange={(e) => setCpf(e.target.value)} inputMode="numeric" autoComplete="off" />
+          <Input icon={IdCard} value={cpf} onChange={(e) => setCpf(e.target.value)} inputMode="numeric" autoComplete="off" />
         </Field>
         <Field label="Endereço">
-          <Input value={endereco} onChange={(e) => setEndereco(e.target.value)} autoComplete="off" />
+          <Input icon={MapPin} value={endereco} onChange={(e) => setEndereco(e.target.value)} autoComplete="off" />
         </Field>
         <Field label="Observação">
           <Textarea value={observacao} onChange={(e) => setObservacao(e.target.value)} />

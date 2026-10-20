@@ -1,11 +1,11 @@
 import clsx from 'clsx'
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ClienteForm } from '@/components/ClienteForm'
 import { PagarModal } from '@/components/PagarModal'
 import { VendaCard } from '@/components/VendaCard'
-import { Button, Card, Empty, ErrorBox, Info, Loading, PageHeader, buttonClass, useConfirmacao } from '@/components/ui'
+import { Avatar, Button, Empty, ErrorBox, Info, Loading, PageHeader, Secao, buttonClass, useConfirmacao } from '@/components/ui'
 import { useClientes, useExcluirCliente, useVendas } from '@/lib/api'
 import { restante, round2, saldoDevedor, statusParcela, type VendaCompleta } from '@/lib/domain'
 import { brl, mensagemCobranca, whatsapp } from '@/lib/format'
@@ -51,21 +51,31 @@ export default function ClienteDetalhe() {
 
   return (
     <>
-      <PageHeader eyebrow="Cliente" title={c.nome} subtitle={c.telefone || 'Sem telefone'} />
-      <div className="mb-6 grid grid-cols-2 gap-px border border-line bg-line">
-        <div className="bg-surface-raised p-4">
-          <div className="text-xs leading-4 text-ink-muted">Saldo devedor</div>
-          <div className="tabular mt-1 text-[22px] font-medium leading-7">{brl(devido)}</div>
+      <div className="mb-6 flex items-center gap-4">
+        <Avatar nome={c.nome} size="lg" />
+        <div className="min-w-0 flex-1">
+          <PageHeader className="" eyebrow="Cliente" title={c.nome} subtitle={c.telefone || 'Sem telefone'} />
         </div>
-        <div className="bg-surface-raised p-4">
-          <div className="text-xs leading-4 text-ink-muted">Em atraso</div>
-          <div className={clsx('tabular mt-1 text-[22px] font-medium leading-7', atrasado > 0 && 'text-danger')}>{brl(atrasado)}</div>
+      </div>
+      <div className="mb-6 rounded-card bg-hero p-5 text-white shadow-elevada">
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <div className="text-xs text-white/60">Saldo devedor</div>
+            <div className="tabular mt-1 break-words text-2xl font-bold text-gold">{brl(devido)}</div>
+          </div>
+          <div>
+            <div className="text-xs text-white/60">Em atraso</div>
+            <div className={clsx('tabular mt-1 break-words text-2xl font-bold', atrasado > 0 && 'text-[rgb(255_180_171)]')}>{brl(atrasado)}</div>
+          </div>
+        </div>
+        <div className="mt-4 border-t border-white/10 pt-3 text-xs text-white/60">
+          {doCliente.length === 1 ? '1 venda' : `${doCliente.length} vendas`} · {parcelas.length === 1 ? '1 parcela' : `${parcelas.length} parcelas`}
         </div>
       </div>
       <div className="mb-6 grid grid-cols-2 gap-3">
         {link && (
           <a href={link} target="_blank" rel="noreferrer" className={clsx(buttonClass({ variant: 'secondary' }), 'col-span-2')}>
-            <MessageCircle size={18} strokeWidth={1.5} aria-hidden="true" />
+            <MessageCircle size={18} strokeWidth={1.8} aria-hidden="true" className="text-success" />
             {atrasado > 0 ? 'Cobrar no WhatsApp' : 'Abrir WhatsApp'}
           </a>
         )}
@@ -80,15 +90,18 @@ export default function ClienteDetalhe() {
         <ErrorBox error={excluir.error} />
       </div>
       {(c.cpf || c.endereco || c.observacao) && (
-        <Card className="mb-6 grid gap-3 sm:grid-cols-2">
-          {c.cpf && <Info label="CPF">{c.cpf}</Info>}
-          {c.endereco && <Info label="Endereço">{c.endereco}</Info>}
-          {c.observacao && <Info label="Observação">{c.observacao}</Info>}
-        </Card>
+        <Secao titulo="Dados do cliente" className="mb-6">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {c.cpf && <Info label="CPF">{c.cpf}</Info>}
+            {c.endereco && <Info label="Endereço">{c.endereco}</Info>}
+            {c.observacao && <Info label="Observação">{c.observacao}</Info>}
+          </div>
+        </Secao>
       )}
       <div className="mb-3 flex items-center justify-between">
-        <p className="eyebrow">Vendas</p>
-        <Link to={`/vendas/nova?cliente=${c.id}`} className={buttonClass({ variant: 'ghost', size: 'sm' })}>
+        <h2 className="text-lg font-bold">Vendas</h2>
+        <Link to={`/vendas/nova?cliente=${c.id}`} className={buttonClass({ variant: 'secondary', size: 'sm' })}>
+          <Plus size={16} strokeWidth={2} aria-hidden="true" />
           Nova venda
         </Link>
       </div>
